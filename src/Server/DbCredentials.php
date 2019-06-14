@@ -12,13 +12,13 @@
 
 declare(strict_types=1);
 
-namespace Comely\Database;
+namespace Comely\Database\Server;
 
 use Comely\Database\Exception\DbConnectionException;
 
 /**
  * Class DbCredentials
- * @package Comely\Database
+ * @package Comely\Database\Server
  * @property-read string $driver
  * @property-read string $host
  * @property-read null|int $port
@@ -51,7 +51,7 @@ class DbCredentials
     public function __construct(string $driver)
     {
         $this->driver = strtolower($driver);
-        if (!in_array($this->driver, PDO::getAvailableDrivers())) {
+        if (!in_array($this->driver, \PDO::getAvailableDrivers())) {
             throw new DbConnectionException('Invalid database driver or is not support');
         }
 
