@@ -17,6 +17,7 @@ namespace Comely\Database\Queries;
 use Comely\Database\Database;
 use Comely\Database\Exception\QueryBuildException;
 use Comely\Database\Queries\Result\Fetch;
+use Comely\Database\Queries\Result\Paginated;
 
 /**
  * Class QueryBuilder
@@ -180,6 +181,42 @@ class QueryBuilder
 
         // Fetch
         return new Fetch($this->db, Query::fetchQuery($query, $this->queryData));
+    }
+
+    /**
+     * @return Paginated
+     * @throws QueryBuildException
+     * @throws \Comely\Database\Exception\QueryExecuteException
+     */
+    public function paginate(): Paginated
+    {
+        // Query pieces
+        $start = $this->selectStart ?? 0;
+        $perPage = $this->selectLimit ?? 100;
+        $fetched = null;
+
+        // Find total rows
+        $totalRows = $this->db->fetch(
+            sprintf('SELECT' . ' count(*) FROM `%s` WHERE %s', $this->tableName, $this->whereClause),
+            $this->queryData
+        )->all();
+        $totalRows = intval($totalRows[0]["count(*)"] ?? 0);
+        if ($totalRows) {
+            // Retrieve actual rows falling within limits
+            $rowsQuery = sprintf(
+                'SELECT' . ' %s FROM `%s` WHERE %s%s LIMIT %d,%d',
+                $this->selectColumns,
+                $this->tableName,
+                $this->whereClause,
+                $this->selectOrder,
+                $start,
+                $perPage
+            );
+
+            $fetched = $this->db->fetch($rowsQuery, $this->queryData);
+        }
+
+        return new Paginated($fetched, $totalRows, $start, $perPage);
     }
 
     /**
