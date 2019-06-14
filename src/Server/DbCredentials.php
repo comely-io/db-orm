@@ -141,4 +141,13 @@ class DbCredentials
         $this->password = $password;
         return $this;
     }
+
+    /**
+     * @return DbCredentials
+     */
+    public function persistent(): self
+    {
+        $this->persistent = true;
+        return $this;
+    }
 }
