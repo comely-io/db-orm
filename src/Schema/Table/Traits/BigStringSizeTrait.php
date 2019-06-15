@@ -31,7 +31,7 @@ trait BigStringSizeTrait
             throw new \InvalidArgumentException('Bad column size, use Schema::SIZE_* flag');
         }
 
-        $this->size = strtoupper($size);
+        $this->size = $size;
         return $this;
     }
 }
