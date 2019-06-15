@@ -28,6 +28,8 @@ class FloatColumn extends AbstractTableColumn
     protected const MAX_DIGITS = 65;
     protected const MAX_SCALE = 30;
 
+    /** @var string */
+    protected $type;
     /** @var int */
     private $digits;
     /** @var int */
@@ -43,6 +45,7 @@ class FloatColumn extends AbstractTableColumn
     public function __construct(string $name)
     {
         parent::__construct($name);
+        $this->type = "float";
         $this->dataType = "double";
         $this->digits = 10;
         $this->scale = 0;
@@ -51,9 +54,9 @@ class FloatColumn extends AbstractTableColumn
 
     /**
      * @param float $value
-     * @return FloatColumn
+     * @return $this
      */
-    public function default(float $value = 0): self
+    public function default(float $value = 0)
     {
         if (!preg_match('/^\-?[0-9]+(\.[0-9]+)?$/', $value)) {
             throw new \InvalidArgumentException(sprintf('Bad default float value for col "%s"', $this->name));
@@ -86,7 +89,7 @@ class FloatColumn extends AbstractTableColumn
     {
         switch ($driver) {
             case "mysql":
-                return sprintf('float(%d,%d)', $this->digits, $this->scale);
+                return sprintf('%s(%d,%d)', $this->type, $this->digits, $this->scale);
             case "sqlite":
                 return "REAL";
         }
