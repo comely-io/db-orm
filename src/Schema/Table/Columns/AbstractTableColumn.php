@@ -36,7 +36,7 @@ abstract class AbstractTableColumn
     /** @var null|string|int */
     private $default;
     /** @var array */
-    private $attributes;
+    protected $attributes;
 
     /**
      * AbstractTableColumn constructor.
@@ -94,17 +94,6 @@ abstract class AbstractTableColumn
         }
 
         $this->default = $value;
-        return $this;
-    }
-
-    /**
-     * @param string $attr
-     * @param $value
-     * @return AbstractTableColumn
-     */
-    protected function attr(string $attr, $value): self
-    {
-        $this->attributes[strtolower($attr)] = $value;
         return $this;
     }
 
