@@ -22,6 +22,7 @@ use Comely\Database\Exception\DbConnectionException;
  * @property-read string $driver
  * @property-read string $host
  * @property-read null|int $port
+ * @property-read null|string $name
  * @property-read null|string $username
  * @property-read null|string $password
  * @property-read bool $persistent
@@ -67,6 +68,7 @@ class DbCredentials
     {
         switch ($prop) {
             case "driver":
+            case "name":
             case "host":
             case "port":
             case "username":
