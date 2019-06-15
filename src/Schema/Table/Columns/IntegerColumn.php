@@ -83,6 +83,7 @@ class IntegerColumn extends AbstractTableColumn
             throw new \InvalidArgumentException('Cannot set signed integer as default value');
         }
 
+        $this->setDefaultValue($value);
         return $this;
     }
 

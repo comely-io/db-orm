@@ -14,8 +14,6 @@ declare(strict_types=1);
 
 namespace Comely\Database\Schema\Table\Columns;
 
-use Comely\Database\Exception\SchemaTableException;
-
 /**
  * Class AbstractTableColumn
  * @package Comely\Database\Schema\Table\Columns
@@ -83,12 +81,11 @@ abstract class AbstractTableColumn
     /**
      * @param $value
      * @return AbstractTableColumn
-     * @throws SchemaTableException
      */
-    protected function defaultValue($value): self
+    protected function setDefaultValue($value): self
     {
         if (is_null($value) && !$this->nullable) {
-            throw new SchemaTableException(
+            throw new \InvalidArgumentException(
                 sprintf('Default value for col "%s" cannot be NULL; Column is not nullable', $this->name)
             );
         }
