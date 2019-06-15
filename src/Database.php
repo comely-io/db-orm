@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Comely\Database;
 
 use Comely\Database\Queries\Query;
+use Comely\Database\Queries\QueryBuilder;
 use Comely\Database\Queries\Result\Fetch;
 use Comely\Database\Server\DbCredentials;
 use Comely\Database\Server\PdoAdapter;
@@ -37,6 +38,14 @@ class Database extends PdoAdapter
     {
         parent::__construct($credentials);
         $this->queries = new Queries();
+    }
+
+    /**
+     * @return QueryBuilder
+     */
+    public function query(): QueryBuilder
+    {
+        return new QueryBuilder($this);
     }
 
     /**
