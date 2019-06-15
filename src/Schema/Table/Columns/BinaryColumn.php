@@ -37,7 +37,7 @@ class BinaryColumn extends AbstractTableColumn
     use UniqueColumnTrait;
 
     /**
-     * StringColumn constructor.
+     * BinaryColumn constructor.
      * @param string $name
      */
     public function __construct(string $name)
