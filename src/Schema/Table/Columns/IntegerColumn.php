@@ -14,7 +14,7 @@ declare(strict_types=1);
 
 namespace Comely\Database\Schema\Table\Columns;
 
-use Comely\Database\Schema\Table\Traits\NumericColumnTrait;
+use Comely\Database\Schema\Table\Traits\NumericValueTrait;
 use Comely\Database\Schema\Table\Traits\UniqueColumnTrait;
 
 /**
@@ -29,7 +29,7 @@ class IntegerColumn extends AbstractTableColumn
     /** @var bool */
     private $autoIncrement;
 
-    use NumericColumnTrait;
+    use NumericValueTrait;
     use UniqueColumnTrait;
 
     /**

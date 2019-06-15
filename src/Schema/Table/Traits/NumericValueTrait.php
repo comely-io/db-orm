@@ -18,7 +18,7 @@ namespace Comely\Database\Schema\Table\Traits;
  * Trait NumericColumnTrait
  * @package Comely\Database\Schema\Table\Traits
  */
-trait NumericColumnTrait
+trait NumericValueTrait
 {
     /**
      * @return self
