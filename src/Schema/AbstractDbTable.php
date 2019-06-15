@@ -14,6 +14,8 @@ declare(strict_types=1);
 
 namespace Comely\Database\Schema;
 
+use Comely\Database\Schema;
+use Comely\Database\Schema\ORM\FindQuery;
 use Comely\Database\Schema\Table\Columns;
 use Comely\Database\Schema\Table\Constraints;
 use Comely\Utils\OOP\OOP;
@@ -72,7 +74,7 @@ abstract class AbstractDbTable
 
             try {
                 $reflect = new \ReflectionClass($this->modelsClass);
-                $modelIsORM = $reflect->isSubclassOf('Comely\Database\Schema\ORM\AbstractDbTableRow');
+                $modelIsORM = $reflect->isSubclassOf('Comely\Database\Schema\ORM\Abstract_ORM_Model');
             } catch (\Exception $e) {
             }
 
@@ -117,6 +119,17 @@ abstract class AbstractDbTable
     public function constraints(): Constraints
     {
         return $this->constraints;
+    }
+
+    /**
+     * @param array|null $match
+     * @return FindQuery
+     * @throws \Comely\Database\Exception\SchemaTableException
+     */
+    public static function Find(?array $match = null): FindQuery
+    {
+        $modelFindQuery = new FindQuery(Schema::Table(strval(static::NAME)));
+        return $match ? $modelFindQuery->match($match) : $modelFindQuery;
     }
 
     /**
