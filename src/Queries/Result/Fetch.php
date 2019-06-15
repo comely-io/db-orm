@@ -51,6 +51,14 @@ class Fetch implements \Countable, \Iterator
     }
 
     /**
+     * @return Query
+     */
+    public function query(): Query
+    {
+        return $this->query;
+    }
+
+    /**
      * @return int
      */
     public function count(): int
