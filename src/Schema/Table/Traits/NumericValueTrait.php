@@ -21,18 +21,18 @@ namespace Comely\Database\Schema\Table\Traits;
 trait NumericValueTrait
 {
     /**
-     * @return self
+     * @return $this
      */
-    final public function signed(): self
+    final public function signed()
     {
         $this->attributes["unsigned"] = 0;
         return $this;
     }
 
     /**
-     * @return self
+     * @return $this
      */
-    final public function unSigned(): self
+    final public function unSigned()
     {
         $this->attributes["unsigned"] = 1;
         return $this;
