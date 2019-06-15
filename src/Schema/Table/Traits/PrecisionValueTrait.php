@@ -31,7 +31,7 @@ trait PrecisionValueTrait
     {
         // Precision digits
         if (!Integers::Range($digits, 1, self::MAX_DIGITS)) {
-            throw new \InvalidArgumentException(
+            throw new \OutOfRangeException(
                 sprintf('Precision digits must be between 1 and %d', self::MAX_DIGITS)
             );
         }
@@ -39,7 +39,7 @@ trait PrecisionValueTrait
         // Scale
         $maxScale = $digits > self::MAX_SCALE ? self::MAX_SCALE : $digits;
         if (!Integers::Range($scale, 0, $maxScale)) {
-            throw new \InvalidArgumentException(
+            throw new \OutOfRangeException(
                 sprintf('Scale digits must be between 1 and %d', $maxScale)
             );
         }
