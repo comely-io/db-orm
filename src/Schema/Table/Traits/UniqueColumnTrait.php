@@ -21,9 +21,9 @@ namespace Comely\Database\Schema\Table\Traits;
 trait UniqueColumnTrait
 {
     /**
-     * @return UniqueColumnTrait
+     * @return $this
      */
-    public function unique(): self
+    public function unique()
     {
         $this->attributes["unique"] = 1;
         return $this;
