@@ -74,6 +74,19 @@ class IntegerColumn extends AbstractTableColumn
     }
 
     /**
+     * @param int $value
+     * @return IntegerColumn
+     */
+    public function default(int $value): self
+    {
+        if ($value < 0 && $this->attributes["unsigned"] === 1) {
+            throw new \InvalidArgumentException('Cannot set signed integer as default value');
+        }
+
+        return $this;
+    }
+
+    /**
      * @return IntegerColumn
      */
     public function autoIncrement(): self
