@@ -98,16 +98,11 @@ class Columns implements \Countable, \Iterator
 
     /**
      * @param string $name
-     * @return AbstractTableColumn
+     * @return AbstractTableColumn|null
      */
-    public function get(string $name): AbstractTableColumn
+    public function get(string $name): ?AbstractTableColumn
     {
-        $column = $this->columns[$name] ?? null;
-        if (!$column) {
-            throw new \OutOfBoundsException(sprintf('Column "%s" not found', $name));
-        }
-
-        return $column;
+        return $this->columns[$name] ?? null;
     }
 
     /**
