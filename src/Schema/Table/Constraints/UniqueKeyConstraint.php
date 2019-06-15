@@ -24,7 +24,7 @@ class UniqueKeyConstraint extends AbstractTableConstraint
     private $columns;
 
     /**
-     * UniqueConstraint constructor.
+     * UniqueKeyConstraint constructor.
      * @param string $name
      */
     public function __construct(string $name)

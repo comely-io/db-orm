@@ -20,9 +20,9 @@ namespace Comely\Database\Schema\Table\Constraints;
  */
 class ForeignKeyConstraint extends AbstractTableConstraint
 {
-    /** @var string */
+    /** @var null|string */
     private $table;
-    /** @var string */
+    /** @var null|string */
     private $col;
     /** @var null|string */
     private $db;
