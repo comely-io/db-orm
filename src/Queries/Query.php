@@ -92,8 +92,6 @@ class Query
         $this->executed = false;
         $this->rows = 0;
         $this->error = null;
-
-
     }
 
     /**
