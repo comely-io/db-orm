@@ -15,9 +15,9 @@ declare(strict_types=1);
 namespace Comely\Database\Exception;
 
 /**
- * Class ORM_RowNotFoundException
+ * Class ORM_ModelSerializeException
  * @package Comely\Database\Exception
  */
-class ORM_RowNotFoundException extends ORM_Exception
+class ORM_ModelSerializeException extends ORM_ModelException
 {
 }

@@ -12,13 +12,12 @@
 
 declare(strict_types=1);
 
-namespace Comely\Database\Schema\ORM;
+namespace Comely\Database\Exception;
 
 /**
- * Class AbstractDbTableRow
- * @package Comely\Database\Schema\ORM
+ * Class ORM_ModelException
+ * @package Comely\Database\Exception
  */
-abstract class AbstractDbTableRow
+class ORM_ModelException extends ORM_Exception
 {
-
 }
