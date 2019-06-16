@@ -14,7 +14,9 @@
   ],
   "require": {
     "php": "^7.1",
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "comely-io/data-types": "^1.0.10",
+    "comely-io/utils": "^1.0.10"
   },
   "autoload": {
     "psr-4": {
