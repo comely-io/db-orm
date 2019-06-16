@@ -17,6 +17,7 @@ namespace Comely\Database;
 use Comely\Database\Exception\SchemaTableException;
 use Comely\Database\Schema\AbstractDbTable;
 use Comely\Database\Schema\BoundDbTable;
+use Comely\Database\Schema\Events;
 use Comely\Utils\OOP\OOP;
 
 /**
@@ -29,6 +30,8 @@ class Schema
     private static $tables = [];
     /** @var array */
     private static $index = [];
+    /** @var null|Events */
+    private static $events;
 
     /**
      * @param Database $db
@@ -64,5 +67,17 @@ class Schema
         }
 
         return $boundTable;
+    }
+
+    /**
+     * @return Events
+     */
+    public static function Events(): Events
+    {
+        if (!static::$events) {
+            static::$events = new Events();
+        }
+
+        return static::$events;
     }
 }
