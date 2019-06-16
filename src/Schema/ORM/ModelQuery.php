@@ -98,18 +98,18 @@ class ModelQuery
         $this->beforeQuery();
         $this->validateMatchClause("save");
 
-        $changes = $this->changes();
+        $saveData = $this->changes();
 
         $insertColumns = [];
         $insertParams = [];
         $updateParams = [];
-        foreach ($changes as $key => $value) {
+        foreach ($saveData as $key => $value) {
             $insertColumns[] = sprintf('`%s`', $key);
             $insertParams[] = ":" . $key;
             $updateParams[] = sprintf('`%1$s`=:%1$s', $key);
         }
 
-        if (!array_key_exists($this->matchColumn, $changes)) {
+        if (!array_key_exists($this->matchColumn, $saveData)) {
             $insertColumns[] = sprintf('`%s`', $this->matchColumn);
             $insertParams[] = ":" . $this->matchColumn;
             $saveData[$this->matchColumn] = $this->matchValue;
@@ -124,7 +124,7 @@ class ModelQuery
         );
 
         try {
-            $query = $boundDbTable->db()->exec($stmnt, $updateValues);
+            $query = $boundDbTable->db()->exec($stmnt, $saveData);
         } catch (DbQueryException $e) {
             throw new ORM_ModelQueryException($e->getMessage(), $e->getCode());
         }
@@ -175,7 +175,7 @@ class ModelQuery
         );
 
         try {
-            $query = $boundDbTable->db()->exec($stmnt, $updateValues);
+            $query = $boundDbTable->db()->exec($stmnt, $changes);
         } catch (DbQueryException $e) {
             throw new ORM_ModelQueryException($e->getMessage(), $e->getCode());
         }
