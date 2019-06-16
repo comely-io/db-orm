@@ -92,6 +92,58 @@ class ModelQuery
      * @return Query
      * @throws ORM_ModelQueryException
      */
+    public function save(): Query
+    {
+        $boundDbTable = $this->boundDbTable();
+        $this->beforeQuery();
+        $this->validateMatchClause("save");
+
+        $changes = $this->changes();
+
+        $insertColumns = [];
+        $insertParams = [];
+        $updateParams = [];
+        foreach ($changes as $key => $value) {
+            $insertColumns[] = sprintf('`%s`', $key);
+            $insertParams[] = ":" . $key;
+            $updateParams[] = sprintf('`%1$s`=:%1$s', $key);
+        }
+
+        if (!array_key_exists($this->matchColumn, $changes)) {
+            $insertColumns[] = sprintf('`%s`', $this->matchColumn);
+            $insertParams[] = ":" . $this->matchColumn;
+            $saveData[$this->matchColumn] = $this->matchValue;
+        }
+
+        $stmnt = sprintf(
+            'INSERT' . ' INTO `%s` (%s) VALUES (%s)  ON DUPLICATE KEY UPDATE %s',
+            $boundDbTable->table()->name,
+            implode(", ", $insertColumns),
+            implode(", ", $insertParams),
+            implode(", ", $updateParams)
+        );
+
+        try {
+            $query = $boundDbTable->db()->exec($stmnt, $updateValues);
+        } catch (DbQueryException $e) {
+            throw new ORM_ModelQueryException($e->getMessage(), $e->getCode());
+        }
+
+        if (!$query->isSuccess(true)) {
+            call_user_func_array([$this->model, "triggerEvent"], ["onQueryFail", $query]);
+            throw new ORM_ModelQueryException(
+                sprintf('Failed to save %s row', $this->modelName())
+            );
+        }
+
+        $this->afterQuery();
+        return $query;
+    }
+
+    /**
+     * @return Query
+     * @throws ORM_ModelQueryException
+     */
     public function insert(): Query
     {
         $boundDbTable = $this->boundDbTable();
