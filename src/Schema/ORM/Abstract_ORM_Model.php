@@ -105,7 +105,7 @@ abstract class Abstract_ORM_Model implements \Serializable
      * @param AbstractTableColumn|null $col
      * @return array|mixed|null
      */
-    final public function originals(?AbstractTableColumn $col)
+    final public function originals(?AbstractTableColumn $col = null)
     {
         if ($col) {
             return $this->originals[$col->name] ?? null;
