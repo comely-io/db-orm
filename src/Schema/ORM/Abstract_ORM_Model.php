@@ -20,7 +20,6 @@ use Comely\Database\Exception\ORM_ModelPopulateException;
 use Comely\Database\Exception\ORM_ModelSerializeException;
 use Comely\Database\Exception\ORM_ModelUnserializeException;
 use Comely\Database\Exception\SchemaTableException;
-use Comely\Database\Queries\Query;
 use Comely\Database\Schema;
 use Comely\Database\Schema\BoundDbTable;
 use Comely\Database\Schema\Table\Columns\AbstractTableColumn;
@@ -33,7 +32,6 @@ use Comely\Utils\OOP\OOP;
  * @method void onLoad()
  * @method void onSerialize()
  * @method void onUnserialize()
- * @method void onQueryFail(Query $query)
  * @method void beforeQuery()
  * @method void afterQuery()
  */
@@ -123,9 +121,14 @@ abstract class Abstract_ORM_Model implements \Serializable
         return new ModelQuery($this);
     }
 
+    /**
+     * @return ModelLock
+     * @throws ORM_Exception
+     * @throws \Comely\Database\Exception\ORM_ModelLockException
+     */
     final public function lock()
     {
-
+        return new ModelLock($this);
     }
 
     /**
