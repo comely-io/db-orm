@@ -20,6 +20,7 @@ use Comely\Database\Exception\ORM_ModelPopulateException;
 use Comely\Database\Exception\ORM_ModelSerializeException;
 use Comely\Database\Exception\ORM_ModelUnserializeException;
 use Comely\Database\Exception\SchemaTableException;
+use Comely\Database\Queries\Query;
 use Comely\Database\Schema;
 use Comely\Database\Schema\BoundDbTable;
 use Comely\Database\Schema\Table\Columns\AbstractTableColumn;
@@ -32,6 +33,7 @@ use Comely\Utils\OOP\OOP;
  * @method void onLoad()
  * @method void onSerialize()
  * @method void onUnserialize()
+ * @method void onQueryFail(Query $query)
  * @method void beforeQuery()
  * @method void afterQuery()
  */
@@ -241,7 +243,7 @@ abstract class Abstract_ORM_Model implements \Serializable
     {
         switch ($method) {
             case "triggerEvent":
-                $this->triggerEvent(strval($arguments[0] ?? ""));
+                $this->triggerEvent(strval($arguments[0] ?? ""), $arguments);
                 return;
         }
 
@@ -387,11 +389,12 @@ abstract class Abstract_ORM_Model implements \Serializable
 
     /**
      * @param string $event
+     * @param array $args
      */
-    final private function triggerEvent(string $event): void
+    final private function triggerEvent(string $event, array $args = []): void
     {
         if (method_exists($this, $event)) {
-            call_user_func([$this, $event]);
+            call_user_func_array([$this, $event], $args);
         }
     }
 }
