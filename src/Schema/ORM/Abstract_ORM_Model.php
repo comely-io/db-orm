@@ -109,6 +109,30 @@ abstract class Abstract_ORM_Model implements \Serializable
     }
 
     /**
+     * @return Schema\Table\Columns\AbstractTableColumn|null
+     * @throws ORM_Exception
+     */
+    final public function primaryCol(): ?Schema\Table\Columns\AbstractTableColumn
+    {
+        $table = $this->bound()->table();
+
+        // Get declared PRIMARY key
+        $primaryKey = $table->columns()->primaryKey;
+        if ($primaryKey) {
+            return $table->columns()->get($primaryKey);
+        }
+
+        // Find first UNIQUE key
+        foreach ($table->columns() as $column) {
+            if (isset($column->attrs["unique"])) {
+                return $column;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @return array
      * @throws ORM_Exception
      */
