@@ -17,7 +17,9 @@ namespace Comely\Database\Schema\ORM;
 use Comely\Database\Exception\DbQueryException;
 use Comely\Database\Exception\ORM_Exception;
 use Comely\Database\Exception\ORM_ModelQueryException;
+use Comely\Database\Exception\SchemaException;
 use Comely\Database\Queries\Query;
+use Comely\Database\Schema;
 use Comely\Database\Schema\BoundDbTable;
 use Comely\Utils\OOP\OOP;
 
@@ -89,10 +91,11 @@ class ModelQuery
     }
 
     /**
+     * @param \Closure|null $callbackOnFail
      * @return Query
      * @throws ORM_ModelQueryException
      */
-    public function save(): Query
+    public function save(?\Closure $callbackOnFail = null): Query
     {
         $boundDbTable = $this->boundDbTable();
         $this->beforeQuery();
@@ -130,7 +133,7 @@ class ModelQuery
         }
 
         if (!$query->isSuccess(true)) {
-            call_user_func_array([$this->model, "triggerEvent"], ["onQueryFail", $query]);
+            $this->eventOnQueryFail($query, $callbackOnFail);
             throw new ORM_ModelQueryException(
                 sprintf('Failed to save %s row', $this->modelName())
             );
@@ -141,10 +144,11 @@ class ModelQuery
     }
 
     /**
+     * @param \Closure|null $callbackOnFail
      * @return Query
      * @throws ORM_ModelQueryException
      */
-    public function insert(): Query
+    public function insert(?\Closure $callbackOnFail = null): Query
     {
         $boundDbTable = $this->boundDbTable();
         $this->beforeQuery();
@@ -181,7 +185,7 @@ class ModelQuery
         }
 
         if (!$query->isSuccess(true)) {
-            call_user_func_array([$this->model, "triggerEvent"], ["onQueryFail", $query]);
+            $this->eventOnQueryFail($query, $callbackOnFail);
             throw new ORM_ModelQueryException(
                 sprintf('Failed to insert %s row', $this->modelName())
             );
@@ -192,10 +196,11 @@ class ModelQuery
     }
 
     /**
+     * @param \Closure|null $callbackOnFail
      * @return Query
      * @throws ORM_ModelQueryException
      */
-    public function update(): Query
+    public function update(?\Closure $callbackOnFail = null): Query
     {
         $boundDbTable = $this->boundDbTable();
         $this->beforeQuery();
@@ -230,7 +235,7 @@ class ModelQuery
         }
 
         if (!$query->isSuccess(true)) {
-            call_user_func_array([$this->model, "triggerEvent"], ["onQueryFail", $query]);
+            $this->eventOnQueryFail($query, $callbackOnFail);
             throw new ORM_ModelQueryException(
                 sprintf('%s with %s => %s could not be updated', $this->modelName(), $this->matchColumn, $this->matchValue)
             );
@@ -241,10 +246,11 @@ class ModelQuery
     }
 
     /**
+     * @param \Closure|null $callbackOnFail
      * @return Query
      * @throws ORM_ModelQueryException
      */
-    public function delete(): Query
+    public function delete(?\Closure $callbackOnFail = null): Query
     {
         $boundDbTable = $this->boundDbTable();
         $this->beforeQuery();
@@ -259,7 +265,7 @@ class ModelQuery
         }
 
         if (!$query->isSuccess(true)) {
-            call_user_func_array([$this->model, "triggerEvent"], ["onQueryFail", $query]);
+            $this->eventOnQueryFail($query, $callbackOnFail);
             throw new ORM_ModelQueryException(
                 sprintf('%s with %s => %s could not be deleted', $this->modelName(), $this->matchColumn, $this->matchValue)
             );
@@ -267,6 +273,22 @@ class ModelQuery
 
         $this->afterQuery();
         return $query;
+    }
+
+    /**
+     * @param Query $failedQuery
+     * @param \Closure|null $callbackOnFail
+     */
+    private function eventOnQueryFail(Query $failedQuery, ?\Closure $callbackOnFail = null): void
+    {
+        try {
+            Schema::Events()->trigger(Schema\Events::ON_ORM_QUERY_FAIL, [$failedQuery]);
+        } catch (SchemaException $e) {
+        }
+
+        if ($callbackOnFail) {
+            $callbackOnFail($failedQuery);
+        }
     }
 
     /**
