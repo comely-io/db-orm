@@ -71,12 +71,14 @@ class Database extends PdoAdapter
     /**
      * @param string $query
      * @param array|null $data
-     * @return int
-     * @throws Exception\QueryExecuteException
+     * @return Query
      * @throws Exception\QueryBuildException
+     * @throws Exception\QueryExecuteException
      */
-    public function exec(string $query, ?array $data = null): int
+    public function exec(string $query, ?array $data = null): Query
     {
-        return (new Query(Query::EXEC, $query, $data))->execute($this);
+        $query = new Query(Query::EXEC, $query, $data);
+        $query->execute($this);
+        return $query;
     }
 }
