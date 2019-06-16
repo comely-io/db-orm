@@ -22,6 +22,7 @@ use Comely\Database\Exception\ORM_ModelUnserializeException;
 use Comely\Database\Exception\SchemaTableException;
 use Comely\Database\Schema;
 use Comely\Database\Schema\BoundDbTable;
+use Comely\Database\Schema\Table\Columns\AbstractTableColumn;
 use Comely\Utils\OOP\OOP;
 
 /**
@@ -98,6 +99,19 @@ abstract class Abstract_ORM_Model implements \Serializable
         return $this->$prop ?? $this->props[$prop] ?? null;
     }
 
+    /**
+     * @param AbstractTableColumn|null $col
+     * @return array|mixed|null
+     */
+    final public function originals(?AbstractTableColumn $col)
+    {
+        if ($col) {
+            return $this->originals[$col->name] ?? null;
+        }
+
+        return $this->originals;
+    }
+
     final public function query()
     {
 
@@ -109,10 +123,10 @@ abstract class Abstract_ORM_Model implements \Serializable
     }
 
     /**
-     * @return Schema\Table\Columns\AbstractTableColumn|null
+     * @return AbstractTableColumn|null
      * @throws ORM_Exception
      */
-    final public function primaryCol(): ?Schema\Table\Columns\AbstractTableColumn
+    final public function primaryCol(): ?AbstractTableColumn
     {
         $table = $this->bound()->table();
 
