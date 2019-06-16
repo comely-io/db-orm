@@ -24,7 +24,7 @@ use Comely\Database\Server\PdoAdapter;
  * Class Database
  * @package Comely\Database
  */
-class Database extends PdoAdapter
+class Database extends PdoAdapter implements ConstantsInterface
 {
     /** @var Queries */
     private $queries;

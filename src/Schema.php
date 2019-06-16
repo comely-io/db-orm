@@ -25,7 +25,7 @@ use Comely\Utils\OOP\OOP;
  * Class Schema
  * @package Comely\Database
  */
-class Schema
+class Schema implements ConstantsInterface
 {
     /** @var array */
     private static $tables = [];
