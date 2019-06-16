@@ -18,6 +18,7 @@ use Comely\Database\Exception\SchemaTableException;
 use Comely\Database\Schema\AbstractDbTable;
 use Comely\Database\Schema\BoundDbTable;
 use Comely\Database\Schema\Events;
+use Comely\Database\Schema\Migration;
 use Comely\Utils\OOP\OOP;
 
 /**
@@ -67,6 +68,16 @@ class Schema
         }
 
         return $boundTable;
+    }
+
+    /**
+     * @param string $tableNameOrClassName
+     * @return Migration
+     * @throws SchemaTableException
+     */
+    public static function Migration(string $tableNameOrClassName): Migration
+    {
+        return new Migration(self::Table($tableNameOrClassName));
     }
 
     /**
