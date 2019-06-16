@@ -112,9 +112,13 @@ abstract class Abstract_ORM_Model implements \Serializable
         return $this->originals;
     }
 
-    final public function query()
+    /**
+     * @return ModelQuery
+     * @throws \Comely\Database\Exception\ORM_ModelQueryException
+     */
+    final public function query(): ModelQuery
     {
-
+        return new ModelQuery($this);
     }
 
     final public function lock()
