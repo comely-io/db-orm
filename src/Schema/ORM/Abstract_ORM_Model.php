@@ -192,6 +192,21 @@ abstract class Abstract_ORM_Model implements \Serializable
     }
 
     /**
+     * @param string $method
+     * @param $arguments
+     */
+    final public function __call(string $method, $arguments)
+    {
+        switch ($method) {
+            case "triggerEvent":
+                $this->triggerEvent(strval($arguments[0] ?? ""));
+                return;
+        }
+
+        throw new \DomainException('Cannot call inaccessible method');
+    }
+
+    /**
      * @return string
      * @throws ORM_Exception
      * @throws ORM_ModelSerializeException
