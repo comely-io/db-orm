@@ -92,6 +92,57 @@ class ModelQuery
      * @return Query
      * @throws ORM_ModelQueryException
      */
+    public function insert(): Query
+    {
+        $boundDbTable = $this->boundDbTable();
+        $this->beforeQuery();
+
+        if (!$this->model->originals()) {
+            throw new ORM_ModelQueryException(
+                sprintf('Cannot insert already existing %s row', $this->modelName())
+            );
+        }
+
+        $changes = $this->changes();
+        if (!$changes) {
+            throw new ORM_ModelQueryException(sprintf('No data to insert %s row', $this->modelName()));
+        }
+
+        $insertColumns = [];
+        $insertParams = [];
+        foreach ($changes as $key => $value) {
+            $insertColumns[] = sprintf('`%s`', $key);
+            $insertParams[] = ":" . $key;
+        }
+
+        $stmnt = sprintf(
+            'INSERT' . ' INTO `%s` (%s) VALUES (%s)',
+            $boundDbTable->table()->name,
+            implode(", ", $insertColumns),
+            implode(", ", $insertParams)
+        );
+
+        try {
+            $query = $boundDbTable->db()->exec($stmnt, $updateValues);
+        } catch (DbQueryException $e) {
+            throw new ORM_ModelQueryException($e->getMessage(), $e->getCode());
+        }
+
+        if (!$query->isSuccess(true)) {
+            call_user_func_array([$this->model, "triggerEvent"], ["onQueryFail", $query]);
+            throw new ORM_ModelQueryException(
+                sprintf('Failed to insert %s row', $this->modelName())
+            );
+        }
+
+        $this->afterQuery();
+        return $query;
+    }
+
+    /**
+     * @return Query
+     * @throws ORM_ModelQueryException
+     */
     public function update(): Query
     {
         $boundDbTable = $this->boundDbTable();
