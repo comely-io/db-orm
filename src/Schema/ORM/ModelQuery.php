@@ -14,9 +14,11 @@ declare(strict_types=1);
 
 namespace Comely\Database\Schema\ORM;
 
+use Comely\Database\Exception\DbQueryException;
 use Comely\Database\Exception\ORM_Exception;
 use Comely\Database\Exception\ORM_ModelQueryException;
 use Comely\Database\Queries\Query;
+use Comely\Database\Schema\BoundDbTable;
 use Comely\Utils\OOP\OOP;
 
 /**
@@ -25,8 +27,8 @@ use Comely\Utils\OOP\OOP;
  */
 class ModelQuery
 {
-    /** @var null|Query */
-    private $query;
+    /** @var bool */
+    private $executed;
     /** @var Abstract_ORM_Model */
     private $model;
     /** @var null|string */
@@ -41,6 +43,7 @@ class ModelQuery
      */
     public function __construct(Abstract_ORM_Model $model)
     {
+        $this->executed = false;
         $this->model = $model;
 
         try {
@@ -62,8 +65,9 @@ class ModelQuery
      */
     public function where(string $col, $value = null): self
     {
+        $boundDbTable = $this->boundDbTable();
+
         try {
-            $boundDbTable = $this->model->bound();
             $col = $boundDbTable->table()->columns()->get($col);
             $boundDbTable->validateColumnValueType($col, $value);
         } catch (ORM_Exception $e) {
@@ -85,6 +89,105 @@ class ModelQuery
     }
 
     /**
+     * @return Query
+     * @throws ORM_ModelQueryException
+     */
+    public function update(): Query
+    {
+        $boundDbTable = $this->boundDbTable();
+        $this->beforeQuery();
+        $this->validateMatchClause("update");
+
+        $changes = $this->changes();
+        if (!$changes) {
+            throw new ORM_ModelQueryException(
+                sprintf('ORM model %s has no changes for update', $this->modelName())
+            );
+        }
+
+        $updateParams = [];
+        $updateValues = [];
+        foreach ($changes as $key => $value) {
+            $updateParams[] = sprintf('`%1$s`=:%1$s', $key);
+            $updateValues[$key] = $value;
+        }
+
+        $updateValues["p_" . $this->matchColumn] = $this->matchValue;
+        $stmnt = sprintf(
+            'UPDATE' . ' `%1$s` SET %2$s WHERE `%3$s`=:p_%3$s',
+            $boundDbTable->table()->name,
+            implode(", ", $updateParams),
+            $this->matchColumn
+        );
+
+        try {
+            $query = $boundDbTable->db()->exec($stmnt, $updateValues);
+        } catch (DbQueryException $e) {
+            throw new ORM_ModelQueryException($e->getMessage(), $e->getCode());
+        }
+
+        if (!$query->isSuccess(true)) {
+            call_user_func_array([$this->model, "triggerEvent"], ["onQueryFail", $query]);
+            throw new ORM_ModelQueryException(
+                sprintf('%s with %s => %s could not be updated', $this->modelName(), $this->matchColumn, $this->matchValue)
+            );
+        }
+
+        $this->afterQuery();
+        return $query;
+    }
+
+    /**
+     * @return Query
+     * @throws ORM_ModelQueryException
+     */
+    public function delete(): Query
+    {
+        $boundDbTable = $this->boundDbTable();
+        $this->beforeQuery();
+        $this->validateMatchClause("delete");
+
+        $stmnt = sprintf('DELETE ' . 'FROM `%s` WHERE `%s`=?', $boundDbTable->table()->name, $this->matchColumn);
+
+        try {
+            $query = $boundDbTable->db()->exec($stmnt, [$this->matchValue]);
+        } catch (DbQueryException $e) {
+            throw new ORM_ModelQueryException($e->getMessage(), $e->getCode());
+        }
+
+        if (!$query->isSuccess(true)) {
+            call_user_func_array([$this->model, "triggerEvent"], ["onQueryFail", $query]);
+            throw new ORM_ModelQueryException(
+                sprintf('%s with %s => %s could not be deleted', $this->modelName(), $this->matchColumn, $this->matchValue)
+            );
+        }
+
+        $this->afterQuery();
+        return $query;
+    }
+
+    /**
+     * @return string
+     */
+    private function modelName(): string
+    {
+        return OOP::baseClassName(get_class($this->model));
+    }
+
+    /**
+     * @return BoundDbTable
+     * @throws ORM_ModelQueryException
+     */
+    private function boundDbTable(): BoundDbTable
+    {
+        try {
+            return $this->model->bound();
+        } catch (ORM_Exception $e) {
+            throw new ORM_ModelQueryException($e->getMessage());
+        }
+    }
+
+    /**
      * @param string $query
      * @throws ORM_ModelQueryException
      */
@@ -95,7 +198,7 @@ class ModelQuery
                 sprintf(
                     '%s query on a %s model requires a PRIMARY or UNIQUE col',
                     strtoupper($query),
-                    OOP::baseClassName(get_class($this->model))
+                    $this->modelName()
                 )
             );
         }
@@ -105,7 +208,7 @@ class ModelQuery
                 sprintf(
                     'Cannot run %s query on %s model, No value for "%s"',
                     strtoupper($query),
-                    OOP::baseClassName(get_class($this->model)),
+                    $this->modelName(),
                     $this->matchColumn
                 )
             );
@@ -115,16 +218,14 @@ class ModelQuery
     /**
      * @return array
      * @throws ORM_ModelQueryException
-     * @throws \Comely\Database\Exception\ORM_Exception
      */
     private function changes(): array
     {
-        $changes = $this->model->changes();
-        if (!$changes) {
-            throw new ORM_ModelQueryException('There are no changes to be saved');
+        try {
+            return $this->model->changes();
+        } catch (ORM_Exception $e) {
+            throw new ORM_ModelQueryException($e->getMessage(), $e->getCode());
         }
-
-        return $changes;
     }
 
     /**
@@ -132,20 +233,19 @@ class ModelQuery
      */
     private function beforeQuery(): void
     {
-        if ($this->query) {
+        if ($this->executed) {
             throw new \RuntimeException('This query has already been executed');
         }
 
-        call_user_func([$this->model, "triggerEvent"], "beforeQuery");
+        call_user_func_array([$this->model, "triggerEvent"], ["beforeQuery"]);
     }
 
     /**
-     * @param Query $query
      * @return void
      */
-    private function afterQuery(Query $query): void
+    private function afterQuery(): void
     {
-        $this->query = $query;
-        call_user_func([$this->model, "triggerEvent"], "afterQuery");
+        $this->executed = true;
+        call_user_func_array([$this->model, "triggerEvent"], ["afterQuery"]);
     }
 }
