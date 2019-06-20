@@ -17,7 +17,6 @@ namespace Comely\Database\Schema\ORM;
 use Comely\Database\Exception\DbQueryException;
 use Comely\Database\Exception\ORM_Exception;
 use Comely\Database\Exception\ORM_ModelQueryException;
-use Comely\Database\Exception\SchemaException;
 use Comely\Database\Queries\Query;
 use Comely\Database\Schema;
 use Comely\Database\Schema\BoundDbTable;
@@ -281,10 +280,7 @@ class ModelQuery
      */
     private function eventOnQueryFail(Query $failedQuery, ?\Closure $callbackOnFail = null): void
     {
-        try {
-            Schema::Events()->trigger(Schema\Events::ON_ORM_QUERY_FAIL, [$failedQuery]);
-        } catch (SchemaException $e) {
-        }
+        Schema::Events()->on_ORM_ModelQueryFail()->trigger([$failedQuery]);
 
         if ($callbackOnFail) {
             $callbackOnFail($failedQuery);

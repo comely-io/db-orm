@@ -14,7 +14,8 @@ declare(strict_types=1);
 
 namespace Comely\Database\Schema;
 
-use Comely\Database\Exception\SchemaException;
+use Comely\Utils\Events\Event;
+use Comely\Utils\Events\EventsRegister;
 
 /**
  * Class Events
@@ -32,37 +33,14 @@ class Events
      */
     public function __construct()
     {
-        $this->events = [];
+        $this->events = new EventsRegister();
     }
 
     /**
-     * @param callable $callback
+     * @return Event
      */
-    public function on_ORM_ModelQueryFail(callable $callback): void
+    public function on_ORM_ModelQueryFail(): Event
     {
-        $this->register(self::ON_ORM_QUERY_FAIL, $callback);
-    }
-
-    /**
-     * @param string $event
-     * @param array|null $args
-     * @throws SchemaException
-     */
-    public function trigger(string $event, ?array $args = null): void
-    {
-        if (!$this->events[$event]) {
-            throw new SchemaException('No such Schema event is registered');
-        }
-
-        call_user_func_array($this->events[$event], $args);
-    }
-
-    /**
-     * @param string $event
-     * @param callable $callback
-     */
-    private function register(string $event, callable $callback): void
-    {
-        $this->events[$event] = $callback;
+        return $this->events->on(self::ON_ORM_QUERY_FAIL);
     }
 }
