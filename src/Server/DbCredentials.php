@@ -53,7 +53,7 @@ class DbCredentials
     {
         $this->driver = strtolower($driver);
         if (!in_array($this->driver, \PDO::getAvailableDrivers())) {
-            throw new DbConnectionException('Invalid database driver or is not support');
+            throw new DbConnectionException('Invalid database driver or is not supported');
         }
 
         $this->host = "localhost";
