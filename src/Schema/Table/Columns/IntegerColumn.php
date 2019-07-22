@@ -74,6 +74,15 @@ class IntegerColumn extends AbstractTableColumn
     }
 
     /**
+     * @param int $byte
+     * @return IntegerColumn
+     */
+    public function bytes(int $byte): self
+    {
+        return $this->size($byte);
+    }
+
+    /**
      * @param int $value
      * @return IntegerColumn
      */
