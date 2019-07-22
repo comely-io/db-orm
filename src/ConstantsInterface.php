@@ -21,7 +21,7 @@ namespace Comely\Database;
 interface ConstantsInterface
 {
     /** string Version (Major.Minor.Release-Suffix) */
-    public const VERSION = "1.0.12";
+    public const VERSION = "1.0.13";
     /** int Version (Major * 10000 + Minor * 100 + Release) */
-    public const VERSION_ID = 10011;
+    public const VERSION_ID = 10013;
 }
