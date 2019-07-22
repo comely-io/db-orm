@@ -23,6 +23,7 @@ use Comely\Utils\OOP\OOP;
 /**
  * Class AbstractDbTable
  * @package Comely\Database\Schema
+ * @method void onConstruct()
  * @property-read null|string $name
  * @property-read null|string $engine
  * @property-read null|string $model
@@ -83,6 +84,11 @@ abstract class AbstractDbTable
                     sprintf('MODEL const for table "%s" is not sub class of ORM', get_called_class())
                 );
             }
+        }
+
+        // On Construct Callback
+        if (method_exists($this, "onConstruct")) {
+            call_user_func([$this, "onConstruct"]);
         }
 
         // Callback schema method for table structure
