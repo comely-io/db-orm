@@ -22,7 +22,7 @@ use Comely\Database\Schema\Table\Columns\IntegerColumn;
  */
 class Migration
 {
-    /** @var AbstractDbTable */
+    /** @var BoundDbTable */
     private $table;
     /** @var bool */
     private $dropExisting;
@@ -109,7 +109,7 @@ class Migration
 
         // Continue...
         $statement .= sprintf(' `%s` (%s', $table->name, $this->eolChar);
-        $columns = $this->table->columns();
+        $columns = $table->columns();
         $primaryKey = $columns->primaryKey;
         $mysqlUniqueKeys = [];
 
@@ -200,7 +200,7 @@ class Migration
         }
 
         // Constraints
-        foreach ($this->table->constraints() as $constraint) {
+        foreach ($table->constraints() as $constraint) {
             $statement .= sprintf('  %s,%s', call_user_func([$constraint, "getConstraintSQL"], $driver), $this->eolChar);
         }
 
@@ -208,7 +208,7 @@ class Migration
         $statement = substr($statement, 0, -1 * (1 + strlen($this->eolChar))) . $this->eolChar;
         switch ($driver) {
             case "mysql":
-                $statement .= sprintf(') ENGINE=%s;', $this->table->name);
+                $statement .= sprintf(') ENGINE=%s;', $table->name);
                 break;
             case "sqlite":
             default:
