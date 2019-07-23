@@ -208,7 +208,7 @@ class Migration
         $statement = substr($statement, 0, -1 * (1 + strlen($this->eolChar))) . $this->eolChar;
         switch ($driver) {
             case "mysql":
-                $statement .= sprintf(') ENGINE=%s;', $table->name);
+                $statement .= sprintf(') ENGINE=%s;', $table->engine);
                 break;
             case "sqlite":
             default:
