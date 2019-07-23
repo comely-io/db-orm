@@ -101,6 +101,7 @@ class IntegerColumn extends AbstractTableColumn
      */
     public function autoIncrement(): self
     {
+        $this->autoIncrement = true;
         return $this;
     }
 
