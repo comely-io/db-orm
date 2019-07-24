@@ -88,7 +88,7 @@ class Query
 
         $this->type = $type;
         $this->query = $query;
-        $this->data = [];
+        $this->data = $this->data ?? [];
         $this->executed = false;
         $this->rows = 0;
         $this->error = null;
