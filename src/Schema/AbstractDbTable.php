@@ -104,8 +104,9 @@ abstract class AbstractDbTable
         switch ($prop) {
             case "name":
             case "engine":
-            case "model":
                 return $this->$prop;
+            case "model":
+                return $this->modelsClass;
         }
 
         throw new \DomainException('Cannot get value of inaccessible property');
