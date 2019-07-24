@@ -205,7 +205,7 @@ abstract class Abstract_ORM_Model implements \Serializable
                 );
             }
 
-            $value = $row["value"];
+            $value = $row[$column->name];
             switch ($column->dataType) {
                 case "integer":
                     $value = intval($value);
