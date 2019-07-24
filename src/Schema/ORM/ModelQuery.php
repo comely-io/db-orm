@@ -152,7 +152,7 @@ class ModelQuery
         $boundDbTable = $this->boundDbTable();
         $this->beforeQuery();
 
-        if (!$this->model->originals()) {
+        if ($this->model->originals()) {
             throw new ORM_ModelQueryException(
                 sprintf('Cannot insert already existing %s row', $this->modelName())
             );
