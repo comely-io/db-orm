@@ -80,7 +80,7 @@ class BoundDbTable implements \Serializable
     {
         if (is_null($value)) {
             if (!$col->nullable) {
-                throw new ORM_Exception('Column "%s.%s" cannot be NULL', $this->table()->name, $col->name);
+                throw new ORM_Exception(sprintf('Column "%s.%s" cannot be NULL', $this->table()->name, $col->name));
             }
         } else {
             if (!is_scalar($value) || gettype($value) !== $col->dataType) {
