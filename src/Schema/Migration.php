@@ -174,13 +174,13 @@ class Migration
             }
 
             // Nullable?
-            if (!isset($column->nullable)) {
+            if (!$column->nullable) {
                 $statement .= " NOT NULL";
             }
 
             // Default value
             if (is_null($column->default)) {
-                if (isset($column->nullable)) {
+                if ($column->nullable) {
                     $statement .= " default NULL";
                 }
             } else {
