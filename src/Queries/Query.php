@@ -17,6 +17,7 @@ namespace Comely\Database\Queries;
 use Comely\Database\Database;
 use Comely\Database\Exception\QueryExecuteException;
 use Comely\Database\Exception\QueryBuildException;
+use Comely\Database\Exception\QueryNotSuccessException;
 use Comely\Database\Server\PdoError;
 
 /**
@@ -160,6 +161,26 @@ class Query
         }
 
         return false;
+    }
+
+    /**
+     * @param bool $expectPositiveRowCount
+     * @throws QueryNotSuccessException
+     */
+    public function checkSuccess(bool $expectPositiveRowCount = true): void
+    {
+        if (!$this->executed) {
+            throw QueryNotSuccessException::NotExecuted();
+        }
+
+        if ($this->error) {
+            throw QueryNotSuccessException::HasError();
+        }
+
+        $expectedRowsAbove = $expectPositiveRowCount ? 1 : 0;
+        if ($expectedRowsAbove > $this->rows) {
+            throw QueryNotSuccessException::RowCount($expectedRowsAbove, $this->rows);
+        }
     }
 
     /**
