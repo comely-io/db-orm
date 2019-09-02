@@ -127,7 +127,7 @@ class QueryBuilder
         }
 
         // Compile Query
-        $query->data = $queryData;
+        $this->queryData = $queryData;
         $query .= sprintf(' SET %s WHERE %s', substr($setClause, 0, -2), str_replace(':', ':__', $this->whereClause));
 
         // Execute UPDATE query
