@@ -65,7 +65,7 @@ class CompactNav
         if ($prevPages) {
             $this->first = 1;
             $prevPage = array_slice($prevPages, -1);
-            $this->prev = $prevPage["index"];
+            $this->prev = $prevPage[0]["index"];
         }
 
         if ($nextPages) {
