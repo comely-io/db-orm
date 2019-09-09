@@ -52,6 +52,7 @@ class Paginated implements \Countable
         $this->count = 0;
         $this->totalRows = $totalRows;
         $this->start = $start;
+        $this->pages = [];
         $this->perPage = $perPage;
         $this->pageCount = intval(ceil($totalRows / $perPage));
 
