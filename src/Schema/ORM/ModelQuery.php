@@ -59,19 +59,19 @@ class ModelQuery
     }
 
     /**
-     * @param string $col
+     * @param string $colName
      * @param null $value
      * @return ModelQuery
      * @throws ORM_ModelQueryException
      */
-    public function where(string $col, $value = null): self
+    public function where(string $colName, $value = null): self
     {
         $boundDbTable = $this->boundDbTable();
 
         try {
-            $col = $boundDbTable->table()->columns()->get($col);
+            $col = $boundDbTable->table()->columns()->get($colName);
             if(!$col) {
-                throw new ORM_ModelQueryException(sprintf('Column "%s" does not exist in table', $col));
+                throw new ORM_ModelQueryException(sprintf('Column "%s" does not exist in table', $colName));
             }
 
             $boundDbTable->validateColumnValueType($col, $value);
