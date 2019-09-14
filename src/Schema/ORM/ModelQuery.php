@@ -70,6 +70,10 @@ class ModelQuery
 
         try {
             $col = $boundDbTable->table()->columns()->get($col);
+            if(!$col) {
+                throw new ORM_ModelQueryException(sprintf('Column "%s" does not exist in table', $col));
+            }
+
             $boundDbTable->validateColumnValueType($col, $value);
         } catch (ORM_Exception $e) {
             throw new ORM_ModelQueryException($e->getMessage());
