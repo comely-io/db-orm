@@ -231,14 +231,6 @@ abstract class Abstract_ORM_Model implements \Serializable
     }
 
     /**
-     * @throws ORM_ModelException
-     */
-    final public function __clone()
-    {
-        throw new ORM_ModelException(sprintf('ORM model "%s" cannot be cloned', get_called_class()));
-    }
-
-    /**
      * @param string $method
      * @param $arguments
      */
