@@ -323,7 +323,7 @@ abstract class Abstract_ORM_Model implements \Serializable
         unset($prop, $value);
 
         // Restore model props
-        $modelInstance = $obj["mode"] ?? null;
+        $modelInstance = $obj["model"]["instance"] ?? null;
         $modelProps = $obj["model"]["props"] ?? null;
         $modelOriginals = $obj["model"]["originals"] ?? null;
 
