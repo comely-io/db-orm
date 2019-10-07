@@ -274,13 +274,13 @@ abstract class Abstract_ORM_Model implements \Serializable
 
             $prop->setAccessible(true);
 
-            if ($prop->isDefault()) {
+            if (!$prop->isDefault()) {
                 continue; // Ignore dynamically declared properties
             } elseif ($prop->isStatic()) {
                 continue; // Ignore static properties
             }
 
-            $props[$prop->getName()] = $prop->getValue();
+            $props[$prop->getName()] = $prop->getValue($this);
         }
 
         $model = [
