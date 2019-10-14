@@ -167,9 +167,8 @@ abstract class Abstract_ORM_Model implements \Serializable
 
         foreach ($columns as $column) {
             $camelKey = OOP::camelCase($column->name);
-            $currentValue = $this->$camelKey ?? $this->props[$camelKey] ?? null;
+            $currentValue = property_exists($this, $camelKey) ? $this->$camelKey : $this->props[$camelKey] ?? null;
             $originalValue = $this->originals[$column->name] ?? null;
-
             $this->bound()->validateColumnValueType($column, $currentValue);
 
             // Compare with original value
