@@ -112,7 +112,7 @@ class FindQuery
      */
     private function buildQuery(): void
     {
-        $whereQuery = "";
+        $whereQuery = [];
         $whereData = [];
 
         foreach ($this->matchCols as $col => $val) {
@@ -123,13 +123,14 @@ class FindQuery
             $column = $this->boundDbTable->col($col);
             $this->boundDbTable->validateColumnValueType($column, $val);
             if (is_null($val)) {
-                $whereQuery .= sprintf('`%s` IS NULL', $column->name);
+                $whereQuery[] = sprintf('`%s` IS NULL', $column->name);
             } else {
-                $whereQuery .= sprintf('`%s`=?', $column->name);
+                $whereQuery[] = sprintf('`%s`=?', $column->name);
                 $whereData[] = $val;
             }
         }
 
+        $whereQuery = implode(" AND ", $whereQuery);
         if (!$whereQuery) {
             throw new ORM_Exception('Cannot build query; No columns to match');
         }
