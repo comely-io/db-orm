@@ -198,8 +198,9 @@ class FindQuery
             $this->buildQuery();
         }
 
+        $fetchQueryData = $this->data ?? [];
         $fetchQuery = $db->query()->table($table->name)
-            ->where($this->query, $this->data);
+            ->where($this->query, $fetchQueryData);
 
         if ($this->limit) {
             $fetchQuery->limit($this->limit);
