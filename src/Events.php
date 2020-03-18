@@ -10,14 +10,4 @@
  * https://github.com/comely-io/db-orm/blob/master/LICENSE
  */
 
-declare(strict_types=1);
 
-namespace Comely\Database\Exception;
-
-/**
- * Class DbQueryException
- * @package Comely\Database\Exception
- */
-class DbQueryException extends DatabaseException
-{
-}
