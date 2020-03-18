@@ -24,6 +24,7 @@ use Comely\Utils\Events\EventsRegister;
 class Events
 {
     public const ON_ORM_QUERY_FAIL = "orm_query_fail";
+    public const ON_DB_QUERY_EXEC_FAIL = "db_query_exec_fail";
 
     /** @var array */
     private $events;
@@ -42,5 +43,13 @@ class Events
     public function on_ORM_ModelQueryFail(): Event
     {
         return $this->events->on(self::ON_ORM_QUERY_FAIL);
+    }
+
+    /**
+     * @return Event
+     */
+    public function on_DB_QueryExecFail(): Event
+    {
+        return $this->events->on(self::ON_DB_QUERY_EXEC_FAIL);
     }
 }

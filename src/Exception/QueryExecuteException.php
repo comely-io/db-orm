@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Comely\Database\Exception;
 
 use Comely\Database\Queries\Query;
+use Comely\Database\Schema;
 use Throwable;
 
 /**
@@ -37,6 +38,7 @@ class QueryExecuteException extends DbQueryException
     {
         $this->query = $query;
         parent::__construct($message, $code, $previous);
+        Schema::Events()->on_DB_QueryExecFail()->trigger([$query]);
     }
 
     /**
