@@ -45,7 +45,7 @@ class BlobColumn extends AbstractTableColumn
     {
         switch ($driver) {
             case "mysql":
-                return sprintf('%sBLOB', strtoupper($this->size));
+                return sprintf('%sBLOB', strtoupper($this->size ?? ""));
             case "sqlite":
             default:
                 return "BLOB";

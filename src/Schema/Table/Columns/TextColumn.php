@@ -47,7 +47,7 @@ class TextColumn extends AbstractTableColumn
     {
         switch ($driver) {
             case "mysql":
-                return sprintf('%sTEXT', strtoupper($this->size));
+                return sprintf('%sTEXT', strtoupper($this->size ?? ""));
             case "sqlite":
             default:
                 return "TEXT";
