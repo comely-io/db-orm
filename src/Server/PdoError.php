@@ -37,4 +37,12 @@ class PdoError
         $this->code = $errorInfo[1] ?? null;
         $this->info = $errorInfo[2] ?? null;
     }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return sprintf('[%s][%s] %s', $this->sqlState, $this->code, $this->info);
+    }
 }
