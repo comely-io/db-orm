@@ -70,7 +70,7 @@ class ModelQuery
 
         try {
             $col = $boundDbTable->table()->columns()->get($colName);
-            if(!$col) {
+            if (!$col) {
                 throw new ORM_ModelQueryException(sprintf('Column "%s" does not exist in table', $colName));
             }
 
@@ -148,10 +148,11 @@ class ModelQuery
 
     /**
      * @param \Closure|null $callbackOnFail
+     * @param bool $ignoreDuplicate
      * @return Query
      * @throws ORM_ModelQueryException
      */
-    public function insert(?\Closure $callbackOnFail = null): Query
+    public function insert(?\Closure $callbackOnFail = null, bool $ignoreDuplicate = false): Query
     {
         $boundDbTable = $this->boundDbTable();
         $this->beforeQuery();
@@ -175,7 +176,8 @@ class ModelQuery
         }
 
         $stmnt = sprintf(
-            'INSERT' . ' INTO `%s` (%s) VALUES (%s)',
+            'INSERT%s' . ' INTO `%s` (%s) VALUES (%s)',
+            $ignoreDuplicate ? " IGNORE" : "",
             $boundDbTable->table()->name,
             implode(", ", $insertColumns),
             implode(", ", $insertParams)
