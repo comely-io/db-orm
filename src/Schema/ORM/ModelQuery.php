@@ -189,7 +189,8 @@ class ModelQuery
             throw new ORM_ModelQueryException($e->getMessage(), $e->getCode());
         }
 
-        if (!$query->isSuccess(true)) {
+        $expectInserted = !$ignoreDuplicate;
+        if (!$query->isSuccess($expectInserted)) {
             $this->eventOnQueryFail($query, $callbackOnFail);
             throw new ORM_ModelQueryException(
                 sprintf('Failed to insert %s row', $this->modelName())
