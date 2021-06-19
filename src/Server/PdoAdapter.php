@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -24,9 +24,9 @@ use Comely\Database\Exception\PDO_Exception;
 abstract class PdoAdapter
 {
     /** @var \PDO */
-    private $pdo;
+    private \PDO $pdo;
     /** @var DbCredentials */
-    private $credentials;
+    private DbCredentials $credentials;
 
     /**
      * PdoAdapter constructor.
