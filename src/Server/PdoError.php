@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -21,11 +21,11 @@ namespace Comely\Database\Server;
 class PdoError
 {
     /** @var string|null */
-    public $sqlState;
+    public ?string $sqlState = null;
+    /** @var int|string|null */
+    public int|string|null $code = null;
     /** @var string|null */
-    public $code;
-    /** @var string|null */
-    public $info;
+    public ?string $info = null;
 
     /**
      * PdoError constructor.
