@@ -10,13 +10,12 @@
  * https://github.com/comely-io/db-orm/blob/master/LICENSE
  */
 
-declare(strict_types=1);
-
 namespace Comely\Database\Exception;
+
 /**
- * Class DbQueryException
+ * Class QueryFetchException
  * @package Comely\Database\Exception
  */
-class QueryExecuteException extends DbQueryException
+class QueryFetchException extends DbQueryException
 {
 }
