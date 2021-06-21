@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -24,6 +24,7 @@ use Comely\Database\Schema;
 use Comely\Database\Schema\BoundDbTable;
 use Comely\Database\Schema\Table\Columns\AbstractTableColumn;
 use Comely\Utils\OOP\OOP;
+use Comely\Utils\OOP\Traits\NoDumpTrait;
 
 /**
  * Class Abstract_ORM_Model
@@ -37,15 +38,19 @@ use Comely\Utils\OOP\OOP;
  */
 abstract class Abstract_ORM_Model implements \Serializable
 {
+    /** @var null Table classname */
     public const TABLE = null;
+    /** @var bool */
     public const SERIALIZABLE = false;
 
     /** @var array */
-    private $props;
+    private array $props = [];
     /** @var array */
-    private $originals;
-    /** @var null|\ReflectionClass */
-    private $reflection;
+    private array $originals = [];
+    /** @var \ReflectionClass */
+    private \ReflectionClass $reflection;
+
+    use NoDumpTrait;
 
     /**
      * Abstract_ORM_Model constructor.
@@ -58,8 +63,11 @@ abstract class Abstract_ORM_Model implements \Serializable
     {
         $this->bound(); // Check if table is bound with a DB
 
-        $this->props = [];
-        $this->originals = [];
+        try {
+            $this->reflection = new \ReflectionClass(get_called_class());
+        } catch (\ReflectionException) {
+            throw new ORM_Exception('Could not instantiate reflection class');
+        }
 
         $this->triggerEvent("onConstruct");
 
@@ -71,18 +79,12 @@ abstract class Abstract_ORM_Model implements \Serializable
 
     /**
      * @param string $prop
-     * @param $value
+     * @param int|string|float|null $value
      * @return $this
-     * @throws ORM_Exception
-     * @throws ORM_ModelException
      */
-    final public function set(string $prop, $value)
+    public function set(string $prop, int|string|null|float $value): self
     {
-        if (!is_scalar($value) && !is_null($value)) {
-            throw new ORM_ModelException(sprintf('Cannot assign value of type "%s"', gettype($value)));
-        }
-
-        if ($this->reflection()->hasProperty($prop)) {
+        if ($this->reflection->hasProperty($prop)) {
             $this->$prop = $value;
         }
 
@@ -92,21 +94,30 @@ abstract class Abstract_ORM_Model implements \Serializable
 
     /**
      * @param string $prop
-     * @return mixed|null
+     * @return int|string|float|null
      */
-    final public function get(string $prop)
+    final public function get(string $prop): int|string|null|float
     {
         return $this->$prop ?? $this->props[$prop] ?? null;
     }
 
     /**
-     * @param AbstractTableColumn|null $col
-     * @return array|mixed|null
+     * @param string $prop
+     * @return int|string|float|null
      */
-    final public function originals(?AbstractTableColumn $col = null)
+    final public function private(string $prop): int|string|null|float
+    {
+        return $this->props[$prop] ?? null;
+    }
+
+    /**
+     * @param string|null $col
+     * @return int|string|float|array|null
+     */
+    final public function original(string $col = null): int|string|null|float|array
     {
         if ($col) {
-            return $this->originals[$col->name] ?? null;
+            return $this->originals[$col] ?? null;
         }
 
         return $this->originals;
@@ -126,7 +137,7 @@ abstract class Abstract_ORM_Model implements \Serializable
      * @throws ORM_Exception
      * @throws \Comely\Database\Exception\ORM_ModelLockException
      */
-    final public function lock()
+    final public function lock(): ModelLock
     {
         return new ModelLock($this);
     }
@@ -140,7 +151,7 @@ abstract class Abstract_ORM_Model implements \Serializable
         $table = $this->bound()->table();
 
         // Get declared PRIMARY key
-        $primaryKey = $table->columns()->primaryKey;
+        $primaryKey = $table->columns()->getPrimaryKey();
         if ($primaryKey) {
             return $table->columns()->get($primaryKey);
         }
@@ -166,20 +177,21 @@ abstract class Abstract_ORM_Model implements \Serializable
         $changes = [];
 
         foreach ($columns as $column) {
-            $camelKey = OOP::camelCase($column->name);
+            $name = $column->name();
+            $camelKey = OOP::camelCase($name);
             $currentValue = property_exists($this, $camelKey) ? $this->$camelKey : $this->props[$camelKey] ?? null;
-            $originalValue = $this->originals[$column->name] ?? null;
+            $originalValue = $this->originals[$name] ?? null;
             $this->bound()->validateColumnValueType($column, $currentValue);
 
             // Compare with original value
             if (is_null($originalValue)) {
                 // Original value does NOT exist (or is NULL)
                 if (isset($currentValue)) {
-                    $changes[$column->name] = $currentValue;
+                    $changes[$name] = $currentValue;
                 }
             } else {
                 if ($currentValue !== $originalValue) {
-                    $changes[$column->name] = $currentValue;
+                    $changes[$name] = $currentValue;
                 }
             }
         }
@@ -193,40 +205,27 @@ abstract class Abstract_ORM_Model implements \Serializable
      * @throws ORM_ModelException
      * @throws ORM_ModelPopulateException
      */
-    final private function populate(array $row): void
+    private function populate(array $row): void
     {
         $table = $this->bound()->table();
         $columns = $table->columns();
         foreach ($columns as $column) {
-            if (!array_key_exists($column->name, $row)) {
+            $name = $column->name();
+            if (!array_key_exists($name, $row)) {
                 throw new ORM_ModelPopulateException(
-                    sprintf('No value for column "%s.%s" in input row', $table->name, $column->name)
+                    sprintf('No value for column "%s.%s" in input row', $table->name, $name)
                 );
             }
 
-            $value = $row[$column->name];
-            switch ($column->dataType) {
-                case "integer":
-                    $value = intval($value);
-                    break;
-                case "double":
-                    $value = floatval($value);
-                    break;
-            }
+            $value = match ($column->getDataType()) {
+                "integer" => intval($row[$name]),
+                "double" => floatval($row[$name]),
+                default => $row[$name],
+            };
 
-            $this->set(OOP::camelCase($column->name), $value);
-            $this->originals[$column->name] = $value;
+            $this->set(OOP::camelCase($name), $value);
+            $this->originals[$name] = $value;
         }
-    }
-
-    /**
-     * @return array
-     */
-    public function __debugInfo(): array
-    {
-        return [
-            "table" => strval(static::TABLE)
-        ];
     }
 
     /**
@@ -249,7 +248,7 @@ abstract class Abstract_ORM_Model implements \Serializable
      * @throws ORM_Exception
      * @throws ORM_ModelSerializeException
      */
-    final public function serialize()
+    final public function serialize(): string
     {
         if (static::SERIALIZABLE !== true) {
             throw new ORM_ModelSerializeException(sprintf('ORM model "%s" cannot be serialized', get_called_class()));
@@ -258,8 +257,8 @@ abstract class Abstract_ORM_Model implements \Serializable
         $this->triggerEvent("onSerialize"); // Trigger event
 
         $props = [];
-        foreach ($this->reflection()->getProperties() as $prop) {
-            if ($prop->getDeclaringClass() === get_class()) {
+        foreach ($this->reflection->getProperties() as $prop) {
+            if ($prop->getDeclaringClass()->name === get_class()) {
                 continue; // Ignore props of this abstract model class
             }
 
@@ -284,11 +283,11 @@ abstract class Abstract_ORM_Model implements \Serializable
     }
 
     /**
-     * @param string $serialized
+     * @param string $data
      * @throws ORM_Exception
      * @throws ORM_ModelUnserializeException
      */
-    final public function unserialize($serialized)
+    final public function unserialize($data): void
     {
         if (static::SERIALIZABLE !== true) {
             throw new ORM_ModelUnserializeException(
@@ -299,13 +298,13 @@ abstract class Abstract_ORM_Model implements \Serializable
         $this->bound(); // Check if table is bound with database
 
         // Unserialize
-        $obj = unserialize($serialized);
+        $obj = unserialize($data);
         $objProps = $obj["props"];
         if (!is_array($objProps)) {
             throw new ORM_ModelUnserializeException('ERR_OBJ_PROPS');
         }
 
-        foreach ($this->reflection()->getProperties() as $prop) {
+        foreach ($this->reflection->getProperties() as $prop) {
             if (array_key_exists($prop->getName(), $objProps)) {
                 $prop->setAccessible(true); // Set accessibility
                 $prop->setValue($this, $objProps[$prop->getName()]);
@@ -332,32 +331,6 @@ abstract class Abstract_ORM_Model implements \Serializable
         $this->triggerEvent("onUnserialize"); // Trigger event
     }
 
-    /**
-     * @param string $prop
-     * @return mixed|null
-     */
-    final public function private(string $prop)
-    {
-        return $this->props[$prop] ?? null;
-    }
-
-    /**
-     * @return \ReflectionClass
-     * @throws ORM_Exception
-     */
-    final public function reflection(): \ReflectionClass
-    {
-        if (!$this->reflection) {
-            try {
-                $this->reflection = new \ReflectionClass(get_called_class());
-            } catch (\ReflectionException $e) {
-                throw new ORM_Exception('Could not instantiate reflection class');
-            }
-        }
-
-        return $this->reflection;
-    }
-
     /**+
      * @return BoundDbTable
      * @throws ORM_Exception
@@ -365,14 +338,13 @@ abstract class Abstract_ORM_Model implements \Serializable
     final public function bound(): BoundDbTable
     {
         $tableName = static::TABLE;
-        if (!OOP::isValidClassName($tableName)) {
+        if (!is_string($tableName) || !$tableName) {
             throw new ORM_Exception(
-                sprintf('Invalid "table" const value in ORM model "%s"', get_called_class())
+                sprintf('Invalid TABLE const value in ORM model "%s"', get_called_class())
             );
         }
 
         try {
-            /** @var string $tableName */
             $boundDbTable = Schema::Table($tableName);
         } catch (SchemaTableException $e) {
             throw new ORM_Exception($e->getMessage());
@@ -385,7 +357,7 @@ abstract class Abstract_ORM_Model implements \Serializable
      * @param string $event
      * @param array $args
      */
-    final private function triggerEvent(string $event, array $args = []): void
+    private function triggerEvent(string $event, array $args = []): void
     {
         if (method_exists($this, $event)) {
             call_user_func_array([$this, $event], $args);
