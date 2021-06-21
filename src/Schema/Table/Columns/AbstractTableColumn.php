@@ -46,14 +46,20 @@ abstract class AbstractTableColumn
     }
 
     /**
+     * @return string
+     */
+    public function name(): string
+    {
+        return $this->name;
+    }
+
+    /**
      * @param $prop
      * @return mixed
      */
     public function __get($prop)
     {
         switch ($prop) {
-            case "colName":
-                return $this->name;
             case "isNullable":
                 return $this->nullable;
             case "attrs":

@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -28,30 +28,19 @@ use Comely\Database\Schema\Table\Columns\TextColumn;
 /**
  * Class Columns
  * @package Comely\Database\Schema\Table
- * @property-read null|string $primaryKey
  */
 class Columns implements \Countable, \Iterator
 {
     /** @var array */
-    private $columns;
+    private array $columns = [];
     /** @var int */
-    private $count;
+    private int $count = 0;
     /** @var string */
-    private $defaultCharset;
+    private string $defaultCharset = "utf8mb4";
     /** @var string */
-    private $defaultCollate;
+    private string $defaultCollate = "utf8mb4_unicode_ci";
     /** @var null|string */
-    private $primaryKey;
-
-    /**
-     * Columns constructor.
-     */
-    public function __construct()
-    {
-        $this->columns = [];
-        $this->count = 0;
-        $this->defaults("utf8mb4", "utf8mb4_unicode_ci");
-    }
+    private ?string $primaryKey = null;
 
     /**
      * @return array
@@ -62,28 +51,20 @@ class Columns implements \Countable, \Iterator
     }
 
     /**
-     * @param $name
-     * @return bool|null|string
+     * @param string|null $charset
+     * @param string|null $collate
+     * @return $this
      */
-    public function __get($name)
+    public function defaults(?string $charset = null, ?string $collate = null): self
     {
-        switch ($name) {
-            case "primaryKey":
-                return $this->primaryKey;
+        if (is_string($charset) && $charset) {
+            $this->defaultCharset = $charset;
         }
 
-        return false;
-    }
+        if (is_string($collate) && $collate) {
+            $this->defaultCollate = $collate;
+        }
 
-    /**
-     * @param string $charset
-     * @param string $collate
-     * @return Columns
-     */
-    public function defaults(string $charset, string $collate): self
-    {
-        $this->defaultCharset = $charset;
-        $this->defaultCollate = $collate;
         return $this;
     }
 
@@ -92,7 +73,7 @@ class Columns implements \Countable, \Iterator
      */
     private function append(AbstractTableColumn $column): void
     {
-        $this->columns[$column->name] = $column;
+        $this->columns[$column->name()] = $column;
         $this->count++;
     }
 
@@ -225,17 +206,25 @@ class Columns implements \Countable, \Iterator
             throw new \InvalidArgumentException(sprintf('Column "%s" not defined in table', $col));
         }
 
-        if ($column->nullable) {
+        if ($column->isNullable) {
             throw new \InvalidArgumentException(sprintf('Primary key "%s" cannot be nullable', $col));
         }
 
-        if (is_null($column->default)) {
+        if (is_null($column->defaultValue)) {
             if (!$column instanceof IntegerColumn || !$column->autoIncrement) {
                 throw new \InvalidArgumentException(sprintf('Primary key "%s" default value cannot be NULL', $col));
             }
         }
 
         $this->primaryKey = $col;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPrimaryKey(): ?string
+    {
+        return $this->primaryKey;
     }
 
     /**
@@ -275,6 +264,6 @@ class Columns implements \Countable, \Iterator
      */
     public function valid(): bool
     {
-        return is_null(key($this->columns)) ? false : true;
+        return !is_null(key($this->columns));
     }
 }
