@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -22,20 +22,13 @@ use Comely\Database\Schema\Table\Traits\BigStringSizeTrait;
  */
 class BlobColumn extends AbstractTableColumn
 {
+    /** @var string */
+    public const DATATYPE = "string";
+
     /** @var null|string */
-    private $size;
+    private ?string $size = null;
 
     use BigStringSizeTrait;
-
-    /**
-     * BlobColumn constructor.
-     * @param string $name
-     */
-    public function __construct(string $name)
-    {
-        parent::__construct($name);
-        $this->dataType = "string";
-    }
 
     /**
      * @param string $driver
@@ -43,12 +36,9 @@ class BlobColumn extends AbstractTableColumn
      */
     protected function columnSQL(string $driver): ?string
     {
-        switch ($driver) {
-            case "mysql":
-                return sprintf('%sBLOB', strtoupper($this->size ?? ""));
-            case "sqlite":
-            default:
-                return "BLOB";
-        }
+        return match ($driver) {
+            "mysql" => sprintf('%sBLOB', strtoupper($this->size ?? "")),
+            default => "BLOB",
+        };
     }
 }
