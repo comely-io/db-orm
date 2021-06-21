@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -22,34 +22,19 @@ use Comely\Database\Schema\Table\Columns\IntegerColumn;
  */
 class Migration
 {
-    /** @var BoundDbTable */
-    private $table;
     /** @var bool */
-    private $dropExisting;
+    private bool $dropExisting = false;
     /** @var bool */
-    private $createIfNotExists;
+    private bool $createIfNotExists = false;
     /** @var string */
-    private $eolChar;
-
-    /**
-     * @param BoundDbTable $table
-     * @return Migration
-     */
-    public static function Table(BoundDbTable $table): self
-    {
-        return new self($table);
-    }
+    private string $eolChar = PHP_EOL;
 
     /**
      * Migration constructor.
      * @param BoundDbTable $table
      */
-    public function __construct(BoundDbTable $table)
+    public function __construct(private BoundDbTable $table)
     {
-        $this->table = $table;
-        $this->dropExisting = false;
-        $this->createIfNotExists = false;
-        $this->eolChar = PHP_EOL;
     }
 
     /**
@@ -110,16 +95,17 @@ class Migration
         // Continue...
         $statement .= sprintf(' `%s` (%s', $table->name, $this->eolChar);
         $columns = $table->columns();
-        $primaryKey = $columns->primaryKey;
+        $primaryKey = $columns->getPrimaryKey();
         $mysqlUniqueKeys = [];
 
         foreach ($columns as $column) {
-            $statement .= sprintf('  `%s` %s', $column->name, call_user_func([$column, "getColumnSQL"], $driver));
+            $statement .= sprintf('  `%s` %s', $column->name(), call_user_func([$column, "getColumnSQL"], $driver));
 
             // Signed or Unsigned
             if (isset($column->attrs["unsigned"])) {
                 if ($column->attrs["unsigned"] === 1) {
                     if ($column instanceof IntegerColumn) {
+                        /** @noinspection PhpStatementHasEmptyBodyInspection */
                         if ($driver === "sqlite" && $column->autoIncrement) {
                             // SQLite auto-increment columns can't be unsigned
                         } else {
@@ -132,21 +118,17 @@ class Migration
             }
 
             // Primary Key
-            if ($column->name === $primaryKey) {
+            if ($column->name() === $primaryKey) {
                 $statement .= " PRIMARY KEY";
             }
 
             // Auto-increment
             if ($column instanceof IntegerColumn) {
                 if ($column->autoIncrement) {
-                    switch ($driver) {
-                        case "mysql":
-                            $statement .= " auto_increment";
-                            break;
-                        case "sqlite":
-                            $statement .= " AUTOINCREMENT";
-                            break;
-                    }
+                    $statement .= match ($driver) {
+                        "mysql" => " auto_increment",
+                        "sqlite" => " AUTOINCREMENT",
+                    };
                 }
             }
 
@@ -154,7 +136,7 @@ class Migration
             if (isset($column->attrs["unique"])) {
                 switch ($driver) {
                     case "mysql":
-                        $mysqlUniqueKeys[] = $column->name;
+                        $mysqlUniqueKeys[] = $column->name();
                         break;
                     case "sqlite":
                         $statement .= " UNIQUE";
@@ -174,18 +156,18 @@ class Migration
             }
 
             // Nullable?
-            if (!$column->nullable) {
+            if (!$column->isNullable) {
                 $statement .= " NOT NULL";
             }
 
             // Default value
-            if (is_null($column->default)) {
-                if ($column->nullable) {
+            if (is_null($column->defaultValue)) {
+                if ($column->isNullable) {
                     $statement .= " default NULL";
                 }
             } else {
                 $statement .= " default ";
-                $statement .= is_string($column->default) ? sprintf("'%s'", $column->default) : $column->default;
+                $statement .= is_string($column->defaultValue) ? sprintf("'%s'", $column->defaultValue) : $column->defaultValue;
             }
 
             // EOL
@@ -206,15 +188,10 @@ class Migration
 
         // Finishing
         $statement = substr($statement, 0, -1 * (1 + strlen($this->eolChar))) . $this->eolChar;
-        switch ($driver) {
-            case "mysql":
-                $statement .= sprintf(') ENGINE=%s;', $table->engine);
-                break;
-            case "sqlite":
-            default:
-                $statement .= ");";
-                break;
-        }
+        $statement .= match ($driver) {
+            "mysql" => sprintf(') ENGINE=%s;', $table->engine),
+            default => ");",
+        };
 
         return $statement;
     }
