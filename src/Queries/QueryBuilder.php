@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -15,9 +15,8 @@ declare(strict_types=1);
 namespace Comely\Database\Queries;
 
 use Comely\Database\Database;
-use Comely\Database\Exception\QueryBuildException;
-use Comely\Database\Queries\Result\Fetch;
-use Comely\Database\Queries\Result\Paginated;
+use Comely\Database\Exception\DbQueryException;
+use Comely\Database\Exception\QueryBuilderException;
 
 /**
  * Class QueryBuilder
@@ -25,58 +24,61 @@ use Comely\Database\Queries\Result\Paginated;
  */
 class QueryBuilder
 {
-    /** @var Database */
-    private $db;
     /** @var string */
-    private $tableName;
+    private string $tableName = "";
     /** @var string */
-    private $whereClause;
+    private string $whereClause = "1";
     /** @var string */
-    private $selectColumns;
+    private string $selectColumns = "*";
     /** @var bool */
-    private $selectLock;
+    private bool $selectLock = false;
     /** @var string */
-    private $selectOrder;
+    private string $selectOrder = "";
     /** @var int|null */
-    private $selectStart;
+    private ?int $selectStart = null;
     /** @var int|null */
-    private $selectLimit;
+    private ?int $selectLimit = null;
     /** @var array */
-    private $queryData;
+    private array $queryData = [];
+    /** @var bool */
+    private bool $throwOnFail = true;
 
     /**
      * QueryBuilder constructor.
      * @param Database $db
      */
-    public function __construct(Database $db)
+    public function __construct(private Database $db)
     {
-        $this->db = $db;
-        $this->tableName = "";
-        $this->whereClause = "1";
-        $this->selectColumns = "*";
-        $this->selectLock = false;
-        $this->selectOrder = "";
-        $this->selectStart = null;
-        $this->selectLimit = null;
-        $this->queryData = [];
+    }
+
+    /**
+     * @param bool|null $throwOnFail
+     * @return $this
+     */
+    public function options(?bool $throwOnFail = null): self
+    {
+        if (is_bool($throwOnFail)) {
+            $this->throwOnFail = $throwOnFail;
+        }
+
+        return $this;
     }
 
     /**
      * @param array $assoc
-     * @return Query
-     * @throws QueryBuildException
-     * @throws \Comely\Database\Exception\QueryExecuteException
+     * @return DbQueryExec
+     * @throws DbQueryException
      */
-    public function insert(array $assoc): Query
+    public function insert(array $assoc): DbQueryExec
     {
-        $query = sprintf('INSERT' . ' INTO `%s`', $this->tableName);
+        $query = sprintf("INSERT INTO `%s`", $this->tableName);
         $cols = [];
         $params = [];
 
         // Process data
         foreach ($assoc as $key => $value) {
             if (!is_string($key)) {
-                throw new QueryBuildException('INSERT query cannot accept indexed array');
+                throw new QueryBuilderException('INSERT query cannot accept indexed array');
             }
 
             $cols[] = sprintf('`%s`', $key);
@@ -87,30 +89,27 @@ class QueryBuilder
         $query .= sprintf(' (%s) VALUES (%s)', implode(",", $cols), implode(",", $params));
 
         // Execute
-        $insert = Query::execQuery($query, $assoc);
-        $insert->execute($this->db);
-        return $insert;
+        return $this->db->exec($query, $assoc, $this->throwOnFail);
     }
 
     /**
      * @param array $assoc
-     * @return Query
-     * @throws QueryBuildException
-     * @throws \Comely\Database\Exception\QueryExecuteException
+     * @return DbQueryExec
+     * @throws DbQueryException
      */
-    public function update(array $assoc): Query
+    public function update(array $assoc): DbQueryExec
     {
-        $query = sprintf('UPDATE' . ' `%s`', $this->tableName);
+        $query = sprintf('UPDATE `%s`', $this->tableName);
         $queryData = $assoc;
         if ($this->whereClause === "1") {
-            throw new QueryBuildException('UPDATE query requires WHERE clause');
+            throw new QueryBuilderException('UPDATE query requires WHERE clause');
         }
 
         // SET clause
         $setClause = "";
         foreach ($assoc as $key => $value) {
             if (!is_string($key)) {
-                throw new QueryBuildException('UPDATE query cannot accept indexed array');
+                throw new QueryBuilderException('UPDATE query cannot accept indexed array');
             }
 
             $setClause .= sprintf('`%1$s`=:%1$s, ', $key);
@@ -119,7 +118,7 @@ class QueryBuilder
         // Query Data
         foreach ($this->queryData as $key => $value) {
             if (!is_string($key)) {
-                throw new QueryBuildException('WHERE clause for UPDATE query requires named parameters');
+                throw new QueryBuilderException('WHERE clause for UPDATE query requires named parameters');
             }
 
             // Prefix WHERE clause params with "__"
@@ -131,34 +130,31 @@ class QueryBuilder
         $query .= sprintf(' SET %s WHERE %s', substr($setClause, 0, -2), str_replace(':', ':__', $this->whereClause));
 
         // Execute UPDATE query
-        $update = Query::execQuery($query, $queryData);
-        $update->execute($this->db);
-        return $update;
+        return $this->db->exec($query, $queryData, $this->throwOnFail);
     }
 
     /**
-     * @return Query
-     * @throws QueryBuildException
-     * @throws \Comely\Database\Exception\QueryExecuteException
+     * @return DbQueryExec
+     * @throws DbQueryException
      */
-    public function delete(): Query
+    public function delete(): DbQueryExec
     {
         if ($this->whereClause === "1") {
-            throw new QueryBuildException('DELETE query requires WHERE clause');
+            throw new QueryBuilderException('DELETE query requires WHERE clause');
         }
 
-        $query = sprintf('DELETE FROM' . ' `%s` WHERE %s', $this->tableName, $this->whereClause);
-        $delete = Query::execQuery($query, $this->queryData);
-        $delete->execute($this->db);
-        return $delete;
+        return $this->db->exec(
+            sprintf('DELETE FROM `%s` WHERE %s', $this->tableName, $this->whereClause),
+            $this->queryData,
+            $this->throwOnFail
+        );
     }
 
     /**
-     * @return Fetch
-     * @throws QueryBuildException
-     * @throws \Comely\Database\Exception\QueryExecuteException
+     * @return DbFetch
+     * @throws DbQueryException
      */
-    public function fetch(): Fetch
+    public function fetch(): DbFetch
     {
         // Limit
         $limitClause = "";
@@ -180,13 +176,12 @@ class QueryBuilder
         );
 
         // Fetch
-        return new Fetch($this->db, Query::fetchQuery($query, $this->queryData));
+        return $this->db->fetch($query, $this->queryData, $this->throwOnFail);
     }
 
     /**
      * @return Paginated
-     * @throws QueryBuildException
-     * @throws \Comely\Database\Exception\QueryExecuteException
+     * @throws DbQueryException
      */
     public function paginate(): Paginated
     {
@@ -197,7 +192,7 @@ class QueryBuilder
 
         // Find total rows
         $totalRows = $this->db->fetch(
-            sprintf('SELECT' . ' count(*) FROM `%s` WHERE %s', $this->tableName, $this->whereClause),
+            sprintf('SELECT count(*) FROM `%s` WHERE %s', $this->tableName, $this->whereClause),
             $this->queryData
         )->all();
         $totalRows = intval($totalRows[0]["count(*)"] ?? 0);
@@ -213,7 +208,7 @@ class QueryBuilder
                 $perPage
             );
 
-            $fetched = $this->db->fetch($rowsQuery, $this->queryData);
+            $fetched = $this->db->fetch($rowsQuery, $this->queryData, $this->throwOnFail);
         }
 
         return new Paginated($fetched, $totalRows, $start, $perPage);
@@ -221,7 +216,7 @@ class QueryBuilder
 
     /**
      * @param string $name
-     * @return QueryBuilder
+     * @return $this
      */
     public function table(string $name): self
     {
@@ -232,7 +227,7 @@ class QueryBuilder
     /**
      * @param string $clause
      * @param array $data
-     * @return QueryBuilder
+     * @return $this
      */
     public function where(string $clause, array $data): self
     {
@@ -243,7 +238,7 @@ class QueryBuilder
 
     /**
      * @param array $cols
-     * @return QueryBuilder
+     * @return $this
      */
     public function find(array $cols): self
     {
@@ -267,18 +262,18 @@ class QueryBuilder
 
     /**
      * @param string ...$cols
-     * @return QueryBuilder
+     * @return $this
      */
     public function cols(string ...$cols): self
     {
         $this->selectColumns = implode(",", array_map(function ($col) {
-            return preg_match('/[\(|\)]/', $col) ? trim($col) : sprintf('`%1$s`', trim($col));
+            return preg_match('/[(|)]/', $col) ? trim($col) : sprintf('`%1$s`', trim($col));
         }, $cols));
         return $this;
     }
 
     /**
-     * @return QueryBuilder
+     * @return $this
      */
     public function lock(): self
     {
@@ -288,7 +283,7 @@ class QueryBuilder
 
     /**
      * @param string ...$cols
-     * @return QueryBuilder
+     * @return $this
      */
     public function asc(string ...$cols): self
     {
@@ -302,7 +297,7 @@ class QueryBuilder
 
     /**
      * @param string ...$cols
-     * @return QueryBuilder
+     * @return $this
      */
     public function desc(string ...$cols): self
     {
@@ -316,7 +311,7 @@ class QueryBuilder
 
     /**
      * @param int $from
-     * @return QueryBuilder
+     * @return $this
      */
     public function start(int $from): self
     {
@@ -326,7 +321,7 @@ class QueryBuilder
 
     /**
      * @param int $to
-     * @return QueryBuilder
+     * @return $this
      */
     public function limit(int $to): self
     {
