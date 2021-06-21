@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -20,19 +20,10 @@ namespace Comely\Database\Schema\Table\Columns;
  */
 class EnumColumn extends AbstractTableColumn
 {
+    /** @var string */
+    protected const DATATYPE = "string";
     /** @var array */
-    private $options;
-
-    /**
-     * EnumColumn constructor.
-     * @param string $name
-     */
-    public function __construct(string $name)
-    {
-        parent::__construct($name);
-        $this->dataType = "string";
-        $this->options = [];
-    }
+    private array $options = [];
 
     /**
      * @param string ...$opts
