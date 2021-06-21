@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -21,7 +21,7 @@ namespace Comely\Database;
 interface ConstantsInterface
 {
     /** string Version (Major.Minor.Release-Suffix) */
-    public const VERSION = "1.2.11";
+    public const VERSION = "2.0.0";
     /** int Version (Major * 10000 + Minor * 100 + Release) */
-    public const VERSION_ID = 10211;
+    public const VERSION_ID = 20000;
 }
