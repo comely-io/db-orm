@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -20,17 +20,17 @@ namespace Comely\Database\Schema\Table\Constraints;
  */
 class ForeignKeyConstraint extends AbstractTableConstraint
 {
+    /** @var string */
+    private string $table;
+    /** @var string */
+    private string $col;
     /** @var null|string */
-    private $table;
-    /** @var null|string */
-    private $col;
-    /** @var null|string */
-    private $db;
+    private ?string $db = null;
 
     /**
      * @param string $table
      * @param string $column
-     * @return ForeignKeyConstraint
+     * @return $this
      */
     public function table(string $table, string $column): self
     {
@@ -41,7 +41,7 @@ class ForeignKeyConstraint extends AbstractTableConstraint
 
     /**
      * @param string $db
-     * @return ForeignKeyConstraint
+     * @return $this
      */
     public function database(string $db): self
     {
@@ -51,7 +51,7 @@ class ForeignKeyConstraint extends AbstractTableConstraint
 
     /**
      * @param string $driver
-     * @return null|string
+     * @return string|null
      */
     protected function constraintSQL(string $driver): ?string
     {

@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -21,17 +21,7 @@ namespace Comely\Database\Schema\Table\Constraints;
 class UniqueKeyConstraint extends AbstractTableConstraint
 {
     /** @var array */
-    private $columns;
-
-    /**
-     * UniqueKeyConstraint constructor.
-     * @param string $name
-     */
-    public function __construct(string $name)
-    {
-        parent::__construct($name);
-        $this->columns = [];
-    }
+    private array $columns = [];
 
     /**
      * @param string ...$cols
