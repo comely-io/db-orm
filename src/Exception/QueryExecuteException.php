@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Comely\Database\Exception;
 
+use Comely\Database\Schema;
 use Comely\Database\Server\PdoError;
 use Throwable;
 
@@ -59,6 +60,7 @@ class QueryExecuteException extends DbQueryException
         $this->queryStr = $queryStr;
         $this->boundData = $data;
         $this->error = $error;
+        Schema::Events()->on_DB_QueryExecFail()->trigger([$this]);
     }
 
     /**

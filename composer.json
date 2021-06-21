@@ -14,7 +14,8 @@
   ],
   "require": {
     "php": "^8.0",
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "comely-io/utils": "^2.0.1"
   },
   "autoload": {
     "psr-4": {

@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -28,11 +28,11 @@ use Comely\Utils\OOP\OOP;
 class Schema implements ConstantsInterface
 {
     /** @var array */
-    private static $tables = [];
+    private static array $tables = [];
     /** @var array */
-    private static $index = [];
+    private static array $index = [];
     /** @var null|Events */
-    private static $events;
+    private static ?Events $events = null;
 
     /**
      * @param Database $db
