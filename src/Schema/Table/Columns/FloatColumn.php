@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -25,15 +25,19 @@ use Comely\Database\Schema\Table\Traits\PrecisionValueTrait;
  */
 class FloatColumn extends AbstractTableColumn
 {
+    /** @var string */
+    protected const DATATYPE = "double";
+    /** @var int */
     protected const MAX_DIGITS = 65;
+    /** @var int */
     protected const MAX_SCALE = 30;
 
     /** @var string */
-    protected $type;
+    protected string $type;
     /** @var int */
-    private $digits;
+    private int $digits = 10;
     /** @var int */
-    private $scale;
+    private int $scale = 0;
 
     use NumericValueTrait;
     use PrecisionValueTrait;
@@ -46,22 +50,15 @@ class FloatColumn extends AbstractTableColumn
     {
         parent::__construct($name);
         $this->type = "float";
-        $this->dataType = "double";
-        $this->digits = 10;
-        $this->scale = 0;
         $this->setDefaultValue("0");
     }
 
     /**
-     * @param float $value
+     * @param float|int $value
      * @return $this
      */
-    public function default(float $value = 0)
+    public function default(float|int $value = 0): static
     {
-        if (!preg_match('/^\-?[0-9]+(\.[0-9]+)?$/', $value)) {
-            throw new \InvalidArgumentException(sprintf('Bad default float value for col "%s"', $this->name));
-        }
-
         $this->setDefaultValue($value);
         return $this;
     }
