@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -25,18 +25,9 @@ use Comely\Database\Schema\Table\Constraints\UniqueKeyConstraint;
 class Constraints implements \Countable, \Iterator
 {
     /** @var array */
-    private $constraints;
+    private array $constraints = [];
     /** @var int */
-    private $count;
-
-    /**
-     * Constraints constructor.
-     */
-    public function __construct()
-    {
-        $this->constraints = [];
-        $this->count = 0;
-    }
+    private int $count = 0;
 
     /**
      * @param string $key
@@ -107,6 +98,6 @@ class Constraints implements \Countable, \Iterator
      */
     public function valid(): bool
     {
-        return is_null(key($this->constraints)) ? false : true;
+        return !is_null(key($this->constraints));
     }
 }
