@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -17,34 +17,32 @@ namespace Comely\Database\Schema\Table\Columns;
 /**
  * Class AbstractTableColumn
  * @package Comely\Database\Schema\Table\Columns
- * @property-read string $name
- * @property-read string $dataType
- * @property-read bool $nullable
- * @property-read null|string|int|float $default
+ * @property-read string $colName
+ * @property-read bool $isNullable
+ * @property-read null|string|int|float $defaultValue
  * @property-read array $attrs
  */
 abstract class AbstractTableColumn
 {
     /** @var string */
-    protected $name;
+    protected const DATATYPE = null;
+
     /** @var string */
-    protected $dataType;
+    protected string $name;
+    /** @var int|float|string|null */
+    private int|float|string|null $default = null;
     /** @var bool */
-    private $nullable;
-    /** @var null|string|int */
-    private $default;
+    private bool $nullable = false;
     /** @var array */
-    protected $attributes;
+    protected array $attributes = [];
 
     /**
      * AbstractTableColumn constructor.
      * @param string $name
      */
-    public function __construct(string $name)
+    protected function __construct(string $name)
     {
         $this->name = $name;
-        $this->attributes = [];
-        $this->nullable = false;
     }
 
     /**
@@ -54,15 +52,13 @@ abstract class AbstractTableColumn
     public function __get($prop)
     {
         switch ($prop) {
-            case "name":
+            case "colName":
                 return $this->name;
-            case "dataType":
-                return $this->dataType;
-            case "nullable":
+            case "isNullable":
                 return $this->nullable;
             case "attrs":
                 return $this->attributes;
-            case "default":
+            case "defaultValue":
                 return $this->default;
         }
 
@@ -72,17 +68,25 @@ abstract class AbstractTableColumn
     /**
      * @return $this
      */
-    public function nullable()
+    public function nullable(): self
     {
         $this->nullable = true;
         return $this;
     }
 
     /**
-     * @param $value
-     * @return AbstractTableColumn
+     * @return string
      */
-    protected function setDefaultValue($value): self
+    public function getDataType(): string
+    {
+        return static::DATATYPE;
+    }
+
+    /**
+     * @param int|string|float|null $value
+     * @return $this
+     */
+    protected function setDefaultValue(null|int|string|float $value): self
     {
         if (is_null($value) && !$this->nullable) {
             throw new \InvalidArgumentException(
