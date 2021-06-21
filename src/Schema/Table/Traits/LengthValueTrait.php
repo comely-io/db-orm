@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -14,8 +14,6 @@ declare(strict_types=1);
 
 namespace Comely\Database\Schema\Table\Traits;
 
-use Comely\DataTypes\Integers;
-
 /**
  * Trait LengthValueTrait
  * @package Comely\Database\Schema\Table\Traits
@@ -26,9 +24,9 @@ trait LengthValueTrait
      * @param int $length
      * @return $this
      */
-    public function length(int $length)
+    public function length(int $length): static
     {
-        if (!Integers::Range($length, self::LENGTH_MIN, self::LENGTH_MAX)) {
+        if ($length < self::LENGTH_MIN || $length > self::LENGTH_MAX) {
             throw new \OutOfRangeException(
                 sprintf('Maximum length for col "%s" cannot exceed %d', $this->name, self::LENGTH_MAX)
             );
@@ -42,7 +40,7 @@ trait LengthValueTrait
      * @param int $length
      * @return $this
      */
-    public function fixed(int $length)
+    public function fixed(int $length): static
     {
         $this->length($length);
         $this->fixed = true;

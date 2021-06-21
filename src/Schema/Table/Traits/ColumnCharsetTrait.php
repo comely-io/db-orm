@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -24,7 +24,7 @@ trait ColumnCharsetTrait
      * @param string $charset
      * @return $this
      */
-    final public function charset(string $charset)
+    final public function charset(string $charset): static
     {
         $this->attributes["charset"] = $charset;
         return $this;
@@ -34,7 +34,7 @@ trait ColumnCharsetTrait
      * @param string $collate
      * @return $this
      */
-    final public function collation(string $collate)
+    final public function collation(string $collate): static
     {
         $this->attributes["collation"] = $collate;
         return $this;
