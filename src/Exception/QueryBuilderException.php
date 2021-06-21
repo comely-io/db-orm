@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -18,6 +18,6 @@ namespace Comely\Database\Exception;
  * Class QueryBuildException
  * @package Comely\Database\Exception
  */
-class QueryBuildException extends DbQueryException
+class QueryBuilderException extends DbQueryException
 {
 }
