@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -26,8 +26,8 @@ class Events
     public const ON_ORM_QUERY_FAIL = "orm_query_fail";
     public const ON_DB_QUERY_EXEC_FAIL = "db_query_exec_fail";
 
-    /** @var array */
-    private $events;
+    /** @var EventsRegister */
+    private EventsRegister $events;
 
     /**
      * Events constructor.

@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -17,7 +17,7 @@ namespace Comely\Database\Schema\ORM;
 use Comely\Database\Exception\DbQueryException;
 use Comely\Database\Exception\ORM_Exception;
 use Comely\Database\Exception\ORM_ModelQueryException;
-use Comely\Database\Queries\Query;
+use Comely\Database\Queries\DbQueryExec;
 use Comely\Database\Schema;
 use Comely\Database\Schema\BoundDbTable;
 use Comely\Utils\OOP\OOP;
@@ -29,29 +29,24 @@ use Comely\Utils\OOP\OOP;
 class ModelQuery
 {
     /** @var bool */
-    private $executed;
-    /** @var Abstract_ORM_Model */
-    private $model;
+    private bool $executed = false;
     /** @var null|string */
-    private $matchColumn;
+    private ?string $matchColumn = null;
     /** @var null|string|int */
-    private $matchValue;
+    private null|string|int $matchValue = null;
 
     /**
      * ModelQuery constructor.
      * @param Abstract_ORM_Model $model
      * @throws ORM_ModelQueryException
      */
-    public function __construct(Abstract_ORM_Model $model)
+    public function __construct(private Abstract_ORM_Model $model)
     {
-        $this->executed = false;
-        $this->model = $model;
-
         try {
             $primaryCol = $this->model->primaryCol();
             if ($primaryCol) {
-                $this->matchColumn = $primaryCol->name;
-                $this->matchValue = $this->model->originals($primaryCol);
+                $this->matchColumn = $primaryCol->name();
+                $this->matchValue = $this->model->original($primaryCol->name());
             }
         } catch (ORM_Exception $e) {
             throw new ORM_ModelQueryException($e->getMessage());
@@ -60,11 +55,11 @@ class ModelQuery
 
     /**
      * @param string $colName
-     * @param null $value
-     * @return ModelQuery
+     * @param int|string|float|null $value
+     * @return $this
      * @throws ORM_ModelQueryException
      */
-    public function where(string $colName, $value = null): self
+    public function where(string $colName, int|string|float|null $value = null): self
     {
         $boundDbTable = $this->boundDbTable();
 
@@ -80,25 +75,26 @@ class ModelQuery
         }
 
         // Make sure its a PRIMARY or UNIQUE col
-        if ($boundDbTable->table()->columns()->primaryKey !== $col->name) {
+        if ($boundDbTable->table()->columns()->getPrimaryKey() !== $col->name()) {
             if (!isset($col->attrs["unique"])) {
                 throw new ORM_ModelQueryException(
-                    sprintf('Column "%s" is not PRIMARY OR UNIQUE', $col->name)
+                    sprintf('Column "%s" is not PRIMARY OR UNIQUE', $col->name())
                 );
             }
         }
 
-        $this->matchColumn = $col->name;
+        $this->matchColumn = $col->name();
         $this->matchValue = $value;
         return $this;
     }
 
     /**
      * @param \Closure|null $callbackOnFail
-     * @return Query
+     * @param bool $expectPositiveRowCount
+     * @return DbQueryExec
      * @throws ORM_ModelQueryException
      */
-    public function save(?\Closure $callbackOnFail = null): Query
+    public function save(?\Closure $callbackOnFail = null, bool $expectPositiveRowCount = true): DbQueryExec
     {
         $boundDbTable = $this->boundDbTable();
         $this->beforeQuery();
@@ -121,8 +117,8 @@ class ModelQuery
             $saveData[$this->matchColumn] = $this->matchValue;
         }
 
-        $stmnt = sprintf(
-            'INSERT' . ' INTO `%s` (%s) VALUES (%s)  ON DUPLICATE KEY UPDATE %s',
+        $stmt = sprintf(
+            'INSERT INTO `%s` (%s) VALUES (%s)  ON DUPLICATE KEY UPDATE %s',
             $boundDbTable->table()->name,
             implode(", ", $insertColumns),
             implode(", ", $insertParams),
@@ -130,12 +126,12 @@ class ModelQuery
         );
 
         try {
-            $query = $boundDbTable->db()->exec($stmnt, $saveData);
+            $query = $boundDbTable->db()->exec($stmt, $saveData);
         } catch (DbQueryException $e) {
             throw new ORM_ModelQueryException($e->getMessage(), $e->getCode());
         }
 
-        if (!$query->isSuccess(true)) {
+        if (!$query->isSuccess($expectPositiveRowCount)) {
             $this->eventOnQueryFail($query, $callbackOnFail);
             throw new ORM_ModelQueryException(
                 sprintf('Failed to save %s row', $this->modelName())
@@ -149,15 +145,15 @@ class ModelQuery
     /**
      * @param \Closure|null $callbackOnFail
      * @param bool $ignoreDuplicate
-     * @return Query
+     * @return DbQueryExec
      * @throws ORM_ModelQueryException
      */
-    public function insert(?\Closure $callbackOnFail = null, bool $ignoreDuplicate = false): Query
+    public function insert(?\Closure $callbackOnFail = null, bool $ignoreDuplicate = false): DbQueryExec
     {
         $boundDbTable = $this->boundDbTable();
         $this->beforeQuery();
 
-        if ($this->model->originals()) {
+        if ($this->model->original()) {
             throw new ORM_ModelQueryException(
                 sprintf('Cannot insert already existing %s row', $this->modelName())
             );
@@ -175,8 +171,8 @@ class ModelQuery
             $insertParams[] = ":" . $key;
         }
 
-        $stmnt = sprintf(
-            'INSERT%s' . ' INTO `%s` (%s) VALUES (%s)',
+        $stmt = sprintf(
+            'INSERT%s INTO `%s` (%s) VALUES (%s)',
             $ignoreDuplicate ? " IGNORE" : "",
             $boundDbTable->table()->name,
             implode(", ", $insertColumns),
@@ -184,7 +180,7 @@ class ModelQuery
         );
 
         try {
-            $query = $boundDbTable->db()->exec($stmnt, $changes);
+            $query = $boundDbTable->db()->exec($stmt, $changes);
         } catch (DbQueryException $e) {
             throw new ORM_ModelQueryException($e->getMessage(), $e->getCode());
         }
@@ -203,10 +199,11 @@ class ModelQuery
 
     /**
      * @param \Closure|null $callbackOnFail
-     * @return Query
+     * @param bool $expectPositiveRowCount
+     * @return DbQueryExec
      * @throws ORM_ModelQueryException
      */
-    public function update(?\Closure $callbackOnFail = null): Query
+    public function update(?\Closure $callbackOnFail = null, bool $expectPositiveRowCount = true): DbQueryExec
     {
         $boundDbTable = $this->boundDbTable();
         $this->beforeQuery();
@@ -227,20 +224,20 @@ class ModelQuery
         }
 
         $updateValues["p_" . $this->matchColumn] = $this->matchValue;
-        $stmnt = sprintf(
-            'UPDATE' . ' `%1$s` SET %2$s WHERE `%3$s`=:p_%3$s',
+        $stmt = sprintf(
+            'UPDATE `%1$s` SET %2$s WHERE `%3$s`=:p_%3$s',
             $boundDbTable->table()->name,
             implode(", ", $updateParams),
             $this->matchColumn
         );
 
         try {
-            $query = $boundDbTable->db()->exec($stmnt, $updateValues);
+            $query = $boundDbTable->db()->exec($stmt, $updateValues);
         } catch (DbQueryException $e) {
             throw new ORM_ModelQueryException($e->getMessage(), $e->getCode());
         }
 
-        if (!$query->isSuccess(true)) {
+        if (!$query->isSuccess($expectPositiveRowCount)) {
             $this->eventOnQueryFail($query, $callbackOnFail);
             throw new ORM_ModelQueryException(
                 sprintf('%s with %s => %s could not be updated', $this->modelName(), $this->matchColumn, $this->matchValue)
@@ -253,24 +250,25 @@ class ModelQuery
 
     /**
      * @param \Closure|null $callbackOnFail
-     * @return Query
+     * @param bool $expectPositiveRowCount
+     * @return DbQueryExec
      * @throws ORM_ModelQueryException
      */
-    public function delete(?\Closure $callbackOnFail = null): Query
+    public function delete(?\Closure $callbackOnFail = null, bool $expectPositiveRowCount = true): DbQueryExec
     {
         $boundDbTable = $this->boundDbTable();
         $this->beforeQuery();
         $this->validateMatchClause("delete");
 
-        $stmnt = sprintf('DELETE ' . 'FROM `%s` WHERE `%s`=?', $boundDbTable->table()->name, $this->matchColumn);
+        $stmt = sprintf('DELETE FROM `%s` WHERE `%s`=?', $boundDbTable->table()->name, $this->matchColumn);
 
         try {
-            $query = $boundDbTable->db()->exec($stmnt, [$this->matchValue]);
+            $query = $boundDbTable->db()->exec($stmt, [$this->matchValue]);
         } catch (DbQueryException $e) {
             throw new ORM_ModelQueryException($e->getMessage(), $e->getCode());
         }
 
-        if (!$query->isSuccess(true)) {
+        if (!$query->isSuccess($expectPositiveRowCount)) {
             $this->eventOnQueryFail($query, $callbackOnFail);
             throw new ORM_ModelQueryException(
                 sprintf('%s with %s => %s could not be deleted', $this->modelName(), $this->matchColumn, $this->matchValue)
@@ -282,13 +280,12 @@ class ModelQuery
     }
 
     /**
-     * @param Query $failedQuery
+     * @param DbQueryExec $failedQuery
      * @param \Closure|null $callbackOnFail
      */
-    private function eventOnQueryFail(Query $failedQuery, ?\Closure $callbackOnFail = null): void
+    private function eventOnQueryFail(DbQueryExec $failedQuery, ?\Closure $callbackOnFail = null): void
     {
         Schema::Events()->on_ORM_ModelQueryFail()->trigger([$failedQuery]);
-
         if ($callbackOnFail) {
             $callbackOnFail($failedQuery);
         }

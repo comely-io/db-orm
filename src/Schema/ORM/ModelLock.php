@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -26,16 +26,14 @@ use Comely\Utils\OOP\OOP;
  */
 class ModelLock
 {
-    /** @var Abstract_ORM_Model */
-    private $model;
     /** @var null|string */
-    private $matchColumn;
-    /** @var null|string|int */
-    private $matchValue;
+    private ?string $matchColumn;
+    /** @var int|string|float|null */
+    private int|string|float|null $matchValue;
     /** @var null|AbstractTableColumn */
-    private $crosscheckColumn;
-    /** @var null|string|int */
-    private $crosscheckValue;
+    private ?AbstractTableColumn $crosscheckColumn = null;
+    /** @var int|string|float|null */
+    private int|string|float|null $crosscheckValue = null;
 
     /**
      * ModelLock constructor.
@@ -43,9 +41,8 @@ class ModelLock
      * @throws ORM_Exception
      * @throws ORM_ModelLockException
      */
-    public function __construct(Abstract_ORM_Model $model)
+    public function __construct(private Abstract_ORM_Model $model)
     {
-        $this->model = $model;
         $this->matchColumn = $this->model->primaryCol();
         if (!$this->matchColumn) {
             throw new ORM_ModelLockException(
@@ -56,7 +53,7 @@ class ModelLock
             );
         }
 
-        $this->matchValue = $this->model->get(OOP::camelCase($this->matchColumn->name));
+        $this->matchValue = $this->model->get(OOP::camelCase($this->matchColumn->name()));
 
         try {
             $this->model->bound()
@@ -100,22 +97,22 @@ class ModelLock
         }
 
         $ormModelName = OOP::baseClassName(get_class($this->model));
-        $selectColumns[] = sprintf('`%s`', $this->matchColumn->name);
+        $selectColumns[] = sprintf('`%s`', $this->matchColumn->name());
         if ($this->crosscheckColumn) {
-            $selectColumns[] = sprintf('`%s`', $this->crosscheckColumn->name);
+            $selectColumns[] = sprintf('`%s`', $this->crosscheckColumn->name());
         }
 
         // Obtain SELECT ... FOR UPDATE lock
-        $stmnt = sprintf(
-            'SELECT' . ' %s FROM `%s` WHERE `%s`=? FOR UPDATE',
+        $stmt = sprintf(
+            'SELECT %s FROM `%s` WHERE `%s`=? FOR UPDATE',
             implode(",", $selectColumns),
             $boundDbTable->table()->name,
-            $this->matchColumn->name
+            $this->matchColumn->name()
         );
 
         try {
             try {
-                $fetch = $boundDbTable->db()->fetch($stmnt, [$this->matchValue]);
+                $fetch = $boundDbTable->db()->fetch($stmt, [$this->matchValue]);
             } catch (DbQueryException $e) {
                 throw new ORM_ModelLockException($e->getMessage());
             }
@@ -129,13 +126,13 @@ class ModelLock
             }
 
             if ($this->crosscheckColumn && $this->crosscheckValue) {
-                $row = $fetch->first();
-                $fetchedValue = $row[$this->crosscheckColumn->name] ?? null;
-                if (!array_key_exists($this->crosscheckColumn->name, $row) || $fetchedValue !== $this->crosscheckValue) {
+                $row = $fetch->next();
+                $fetchedValue = $row[$this->crosscheckColumn->name()] ?? null;
+                if (!array_key_exists($this->crosscheckColumn->name(), $row) || $fetchedValue !== $this->crosscheckValue) {
                     throw new ORM_ModelLockException(
                         sprintf(
                             'Crosscheck value of column "%s" failed for %s model',
-                            $this->crosscheckColumn->name,
+                            $this->crosscheckColumn->name(),
                             $ormModelName
                         ),
                         ORM_ModelLockException::ERR_CROSSCHECK

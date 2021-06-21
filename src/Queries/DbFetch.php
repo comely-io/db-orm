@@ -36,6 +36,14 @@ class DbFetch
     }
 
     /**
+     * @return DbQueryExec
+     */
+    public function query(): DbQueryExec
+    {
+        return $this->query;
+    }
+
+    /**
      * @return int
      */
     public function count(): int
