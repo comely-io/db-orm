@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -12,54 +12,51 @@
 
 declare(strict_types=1);
 
-namespace Comely\Database\Queries\Result;
+namespace Comely\Database\Queries;
 
-use Comely\Database\Queries\Result\Paginated\CompactNav;
+use Comely\Database\Queries\Paginated\CompactNav;
 
 /**
  * Class Paginated
- * @package Comely\Database\Queries\Result
+ * @package Comely\Database\Queries
  */
 class Paginated implements \Countable
 {
     /** @var int */
-    private $totalRows;
+    private int $totalRows;
     /** @var int */
-    private $pageCount;
+    private int $pageCount;
     /** @var int */
-    private $start;
+    private int $start;
     /** @var int */
-    private $perPage;
+    private int $perPage;
     /** @var array */
-    private $rows;
+    private array $rows = [];
     /** @var array */
-    private $pages;
+    private array $pages = [];
     /** @var int */
-    private $count;
+    private int $count = 0;
     /** @var null|CompactNav */
-    private $compactNav;
+    private ?CompactNav $compact = null;
 
     /**
      * Paginated constructor.
-     * @param Fetch|null $fetched
+     * @param DbFetch $fetched
      * @param int $totalRows
      * @param int $start
      * @param int $perPage
+     * @throws \Comely\Database\Exception\QueryFetchException
      */
-    public function __construct(?Fetch $fetched, int $totalRows, int $start, int $perPage)
+    public function __construct(DbFetch $fetched, int $totalRows, int $start, int $perPage)
     {
-        $this->rows = [];
-        $this->count = 0;
         $this->totalRows = $totalRows;
         $this->start = $start;
-        $this->pages = [];
         $this->perPage = $perPage;
         $this->pageCount = intval(ceil($totalRows / $perPage));
 
         if ($fetched && $totalRows) {
             $this->rows = $fetched->all();
             $this->count = $fetched->count();
-            $this->pages = [];
             for ($i = 0; $i < $this->pageCount; $i++) {
                 $this->pages[] = ["index" => $i + 1, "start" => $i * $perPage];
             }
@@ -72,11 +69,11 @@ class Paginated implements \Countable
      */
     public function compactNav(int $leftRightPagesCount = 5): CompactNav
     {
-        if (!$this->compactNav) {
-            $this->compactNav = new CompactNav($this, $leftRightPagesCount);
+        if (!$this->compact) {
+            $this->compact = new CompactNav($this, $leftRightPagesCount);
         }
 
-        return $this->compactNav;
+        return $this->compact;
     }
 
     /**
@@ -92,7 +89,7 @@ class Paginated implements \Countable
             "start" => $this->start,
             "perPage" => $this->perPage,
             "pageCount" => $this->pageCount,
-            "compactNav" => $this->compactNav,
+            "compactNav" => $this->compact,
             "pages" => null
         ];
 

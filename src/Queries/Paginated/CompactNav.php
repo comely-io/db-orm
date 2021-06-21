@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -12,9 +12,9 @@
 
 declare(strict_types=1);
 
-namespace Comely\Database\Queries\Result\Paginated;
+namespace Comely\Database\Queries\Paginated;
 
-use Comely\Database\Queries\Result\Paginated;
+use Comely\Database\Queries\Paginated;
 
 /**
  * Class CompactNav
@@ -23,15 +23,15 @@ use Comely\Database\Queries\Result\Paginated;
 class CompactNav
 {
     /** @var null|int */
-    public $first;
+    public ?int $first = null;
     /** @var null|int */
-    public $prev;
+    public ?int $prev = null;
     /** @var null|int */
-    public $next;
+    public ?int $next = null;
     /** @var null|int */
-    public $last;
+    public ?int $last = null;
     /** @var array */
-    public $pages;
+    public array $pages;
 
     /**
      * CompactNav constructor.
