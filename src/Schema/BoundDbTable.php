@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -17,27 +17,25 @@ namespace Comely\Database\Schema;
 use Comely\Database\Database;
 use Comely\Database\Exception\ORM_Exception;
 use Comely\Database\Schema\Table\Columns\AbstractTableColumn;
+use Comely\Utils\OOP\Traits\NotCloneableTrait;
+use Comely\Utils\OOP\Traits\NotSerializableTrait;
 
 /**
  * Class BoundDbTable
  * @package Comely\Database\Schema
  */
-class BoundDbTable implements \Serializable
+class BoundDbTable
 {
-    /** @var Database */
-    private $db;
-    /** @var AbstractDbTable */
-    private $table;
+    use NotSerializableTrait;
+    use NotCloneableTrait;
 
     /**
      * BoundDbTable constructor.
      * @param Database $db
      * @param AbstractDbTable $table
      */
-    public function __construct(Database $db, AbstractDbTable $table)
+    public function __construct(private Database $db, private AbstractDbTable $table)
     {
-        $this->db = $db;
-        $this->table = $table;
     }
 
     /**
@@ -79,17 +77,17 @@ class BoundDbTable implements \Serializable
     public function validateColumnValueType(AbstractTableColumn $col, $value): void
     {
         if (is_null($value)) {
-            if (!$col->nullable) {
-                throw new ORM_Exception(sprintf('Column "%s.%s" cannot be NULL', $this->table()->name, $col->name));
+            if (!$col->isNullable) {
+                throw new ORM_Exception(sprintf('Column "%s.%s" cannot be NULL', $this->table()->name, $col->name()));
             }
         } else {
-            if (!is_scalar($value) || gettype($value) !== $col->dataType) {
+            if (!is_scalar($value) || gettype($value) !== $col->getDataType()) {
                 throw new ORM_Exception(
                     sprintf(
                         'Column "%s.%s" expects value of type "%s", got "%s"',
                         $this->table()->name,
-                        $col->name,
-                        $col->dataType,
+                        $col->name(),
+                        $col->getDataType(),
                         gettype($value)
                     )
                 );
@@ -103,32 +101,8 @@ class BoundDbTable implements \Serializable
     public function __debugInfo(): array
     {
         return [
-            "db" => sprintf('%s@%s', $this->db->credentials()->host, $this->db->credentials()->name),
+            "db" => sprintf('%s@%s', $this->db->credentials()->host, $this->db->credentials()->dbname),
             "table" => $this->table->name
         ];
-    }
-
-    /**
-     * @return void
-     */
-    public function __clone()
-    {
-        throw new \DomainException('Instance of Schema\BoundDbTable cannot be cloned');
-    }
-
-    /**
-     * @return string|void
-     */
-    public function serialize()
-    {
-        throw new \DomainException('Instance of Schema\BoundDbTable cannot be serialized');
-    }
-
-    /**
-     * @param string $serialized
-     */
-    public function unserialize($serialized)
-    {
-        throw new \DomainException('Instance of Schema\BoundDbTable cannot be serialized');
     }
 }
