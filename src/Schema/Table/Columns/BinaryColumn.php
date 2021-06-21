@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -24,29 +24,21 @@ use Comely\Database\Schema\Table\Traits\UniqueColumnTrait;
  */
 class BinaryColumn extends AbstractTableColumn
 {
+    /** @var string */
+    protected const DATATYPE = "string";
+    /** @var int */
     protected const LENGTH_MIN = 1;
-    protected const LENGTH_MAX = 65535;
+    /** @var int */
+    protected const LENGTH_MAX = 0xffff;
 
     /** @var int */
-    private $length;
+    private int $length = 255;
     /** @var bool */
-    private $fixed;
+    private bool $fixed = false;
 
     use LengthValueTrait;
     use StringValueTrait;
     use UniqueColumnTrait;
-
-    /**
-     * BinaryColumn constructor.
-     * @param string $name
-     */
-    public function __construct(string $name)
-    {
-        parent::__construct($name);
-        $this->dataType = "string";
-        $this->length = 255;
-        $this->fixed = false;
-    }
 
     /**
      * @param string $driver
