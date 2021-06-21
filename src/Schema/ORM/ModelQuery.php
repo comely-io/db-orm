@@ -126,7 +126,7 @@ class ModelQuery
         );
 
         try {
-            $query = $boundDbTable->db()->exec($stmt, $saveData);
+            $query = $boundDbTable->db()->exec($stmt, $saveData, throwOnFail: false);
         } catch (DbQueryException $e) {
             throw new ORM_ModelQueryException($e->getMessage(), $e->getCode());
         }
@@ -180,7 +180,7 @@ class ModelQuery
         );
 
         try {
-            $query = $boundDbTable->db()->exec($stmt, $changes);
+            $query = $boundDbTable->db()->exec($stmt, $changes, throwOnFail: false);
         } catch (DbQueryException $e) {
             throw new ORM_ModelQueryException($e->getMessage(), $e->getCode());
         }
@@ -232,7 +232,7 @@ class ModelQuery
         );
 
         try {
-            $query = $boundDbTable->db()->exec($stmt, $updateValues);
+            $query = $boundDbTable->db()->exec($stmt, $updateValues, throwOnFail: false);
         } catch (DbQueryException $e) {
             throw new ORM_ModelQueryException($e->getMessage(), $e->getCode());
         }
@@ -263,7 +263,7 @@ class ModelQuery
         $stmt = sprintf('DELETE FROM `%s` WHERE `%s`=?', $boundDbTable->table()->name, $this->matchColumn);
 
         try {
-            $query = $boundDbTable->db()->exec($stmt, [$this->matchValue]);
+            $query = $boundDbTable->db()->exec($stmt, [$this->matchValue], throwOnFail: false);
         } catch (DbQueryException $e) {
             throw new ORM_ModelQueryException($e->getMessage(), $e->getCode());
         }
