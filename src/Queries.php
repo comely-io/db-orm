@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -14,7 +14,7 @@ declare(strict_types=1);
 
 namespace Comely\Database;
 
-use Comely\Database\Queries\Query;
+use Comely\Database\Queries\DbQueryExec;
 
 /**
  * Class Queries
@@ -23,21 +23,11 @@ use Comely\Database\Queries\Query;
 class Queries implements \Iterator, \Countable
 {
     /** @var array */
-    private $queries;
+    private array $queries = [];
     /** @var int */
-    private $count;
+    private int $count = 0;
     /** @var int */
-    private $pos;
-
-    /**
-     * Queries constructor.
-     */
-    public function __construct()
-    {
-        $this->queries = [];
-        $this->count = 0;
-        $this->pos = 0;
-    }
+    private int $pos = 0;
 
     /**
      * @return void
@@ -49,10 +39,10 @@ class Queries implements \Iterator, \Countable
     }
 
     /**
-     * @param Query $query
+     * @param DbQueryExec $query
      * @return int
      */
-    public function append(Query $query): int
+    public function append(DbQueryExec $query): int
     {
         $this->queries[] = $query;
         $this->count++;
@@ -60,12 +50,12 @@ class Queries implements \Iterator, \Countable
     }
 
     /**
-     * @return Query|null
+     * @return DbQueryExec|null
      */
-    public function last(): ?Query
+    public function last(): ?DbQueryExec
     {
         $lastQuery = end($this->queries);
-        return $lastQuery ? $lastQuery : null;
+        return $lastQuery ?: null;
     }
 
     /**
@@ -85,9 +75,9 @@ class Queries implements \Iterator, \Countable
     }
 
     /**
-     * @return Query
+     * @return DbQueryExec
      */
-    public function current(): Query
+    public function current(): DbQueryExec
     {
         return $this->queries[$this->pos];
     }
