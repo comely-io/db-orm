@@ -21,6 +21,8 @@ use Comely\Database\Queries\QueryBuilder;
 use Comely\Database\Server\DbCredentials;
 use Comely\Database\Server\PdoAdapter;
 use Comely\Database\Server\PdoError;
+use Comely\Utils\OOP\Traits\NotCloneableTrait;
+use Comely\Utils\OOP\Traits\NotSerializableTrait;
 
 /**
  * Class Database
@@ -30,6 +32,9 @@ class Database extends PdoAdapter implements ConstantsInterface
 {
     /** @var Queries */
     private Queries $queries;
+
+    use NotSerializableTrait;
+    use NotCloneableTrait;
 
     /**
      * Database constructor.
