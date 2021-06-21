@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * This file is a part of "comely-io/db-orm" package.
  * https://github.com/comely-io/db-orm
  *
@@ -24,10 +24,12 @@ use Comely\Database\Schema\Table\Traits\UniqueColumnTrait;
  */
 class IntegerColumn extends AbstractTableColumn
 {
+    /** @var string */
+    protected const DATATYPE = "integer";
     /** @var int */
-    private $size;
+    private int $size = 4; // Default 4 byte integer
     /** @var bool */
-    private $autoIncrement;
+    private bool $autoIncrement = false;
 
     use NumericValueTrait;
     use UniqueColumnTrait;
@@ -39,10 +41,7 @@ class IntegerColumn extends AbstractTableColumn
     public function __construct(string $name)
     {
         parent::__construct($name);
-        $this->dataType = "integer";
         $this->attributes["unsigned"] = 0;
-        $this->size = 4; // Default 4 byte integer
-        $this->autoIncrement = false;
     }
 
     /**
@@ -111,23 +110,15 @@ class IntegerColumn extends AbstractTableColumn
      */
     protected function columnSQL(string $driver): ?string
     {
-        switch ($driver) {
-            case "mysql":
-                switch ($this->size) {
-                    case 1:
-                        return "tinyint";
-                    case 2:
-                        return "smallint";
-                    case 3:
-                        return "mediumint";
-                    case 8:
-                        return "bigint";
-                    default:
-                        return "int";
-                }
-            case "sqlite":
-            default:
-                return "integer";
-        }
+        return match ($driver) {
+            "mysql" => match ($this->size) {
+                1 => "tinyint",
+                2 => "smallint",
+                3 => "mediumint",
+                8 => "bigint",
+                default => "int",
+            },
+            default => "integer",
+        };
     }
 }
