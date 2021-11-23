@@ -117,7 +117,7 @@ class Database extends PdoAdapter implements ConstantsInterface
                 };
 
                 if (is_int($key)) {
-                    $key++; // Indexed arrays get +1 to numeric keys so they don't start with 0
+                    $key++; // Indexed arrays get +1 to numeric keys so that they don't start with 0
                 }
 
                 $boundData[$key] = $value;

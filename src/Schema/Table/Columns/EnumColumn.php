@@ -61,13 +61,10 @@ class EnumColumn extends AbstractTableColumn
             return sprintf("'%s'", $opt);
         }, $this->options));
 
-        switch ($driver) {
-            case "mysql":
-                return sprintf('enum(%s)', $options);
-            case "sqlite":
-                return sprintf('TEXT CHECK(%s in (%s))', $this->name, $options);
-        }
-
-        return null;
+        return match ($driver) {
+            "mysql" => sprintf('enum(%s)', $options),
+            "sqlite" => sprintf('TEXT CHECK(%s in (%s))', $this->name, $options),
+            default => null,
+        };
     }
 }

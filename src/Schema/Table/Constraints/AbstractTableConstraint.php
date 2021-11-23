@@ -39,12 +39,10 @@ abstract class AbstractTableConstraint
      */
     public function __get($prop)
     {
-        switch ($prop) {
-            case "name":
-                return $this->name;
-        }
-
-        return false;
+        return match ($prop) {
+            "name" => $this->name,
+            default => false,
+        };
     }
 
     /**

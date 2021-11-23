@@ -69,13 +69,11 @@ class FloatColumn extends AbstractTableColumn
      */
     public function __get($prop)
     {
-        switch ($prop) {
-            case "digits":
-            case "scale":
-                return $this->$prop;
-        }
+        return match ($prop) {
+            "digits", "scale" => $this->$prop,
+            default => parent::__get($prop),
+        };
 
-        return parent::__get($prop);
     }
 
     /**
@@ -84,13 +82,10 @@ class FloatColumn extends AbstractTableColumn
      */
     protected function columnSQL(string $driver): ?string
     {
-        switch ($driver) {
-            case "mysql":
-                return sprintf('%s(%d,%d)', $this->type, $this->digits, $this->scale);
-            case "sqlite":
-                return "REAL";
-        }
-
-        return null;
+        return match ($driver) {
+            "mysql" => sprintf('%s(%d,%d)', $this->type, $this->digits, $this->scale),
+            "sqlite" => "REAL",
+            default => null,
+        };
     }
 }

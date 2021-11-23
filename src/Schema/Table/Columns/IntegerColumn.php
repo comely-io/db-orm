@@ -50,12 +50,11 @@ class IntegerColumn extends AbstractTableColumn
      */
     public function __get($prop)
     {
-        switch ($prop) {
-            case "autoIncrement":
-                return $this->autoIncrement;
-        }
+        return match ($prop) {
+            "autoIncrement" => $this->autoIncrement,
+            default => parent::__get($prop),
+        };
 
-        return parent::__get($prop);
     }
 
     /**

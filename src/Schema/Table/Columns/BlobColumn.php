@@ -25,8 +25,8 @@ class BlobColumn extends AbstractTableColumn
     /** @var string */
     public const DATATYPE = "string";
 
-    /** @var null|string */
-    private ?string $size = null;
+    /** @var string */
+    private string $size = "";
 
     use BigStringSizeTrait;
 

@@ -74,7 +74,7 @@ class ModelQuery
             throw new ORM_ModelQueryException($e->getMessage());
         }
 
-        // Make sure its a PRIMARY or UNIQUE col
+        // Make sure it's a PRIMARY or UNIQUE col
         if ($boundDbTable->table()->columns()->getPrimaryKey() !== $col->name()) {
             if (!isset($col->attrs["unique"])) {
                 throw new ORM_ModelQueryException(

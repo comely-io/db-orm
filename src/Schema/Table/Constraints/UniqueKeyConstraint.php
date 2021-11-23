@@ -43,13 +43,10 @@ class UniqueKeyConstraint extends AbstractTableConstraint
             return sprintf('`%s`', $col);
         }, $this->columns));
 
-        switch ($driver) {
-            case "mysql":
-                return sprintf('UNIQUE KEY `%s` (%s)', $this->name, $columns);
-            case "sqlite":
-                return sprintf('CONSTRAINT `%s` UNIQUE (%s)', $this->name, $columns);
-        }
-
-        return null;
+        return match ($driver) {
+            "mysql" => sprintf('UNIQUE KEY `%s` (%s)', $this->name, $columns),
+            "sqlite" => sprintf('CONSTRAINT `%s` UNIQUE (%s)', $this->name, $columns),
+            default => null,
+        };
     }
 }

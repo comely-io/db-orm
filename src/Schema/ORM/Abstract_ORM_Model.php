@@ -65,7 +65,7 @@ abstract class Abstract_ORM_Model implements \Serializable
 
         try {
             $this->reflection = new \ReflectionClass(get_called_class());
-        } catch (\ReflectionException) {
+        } catch (\Exception) {
             throw new ORM_Exception('Could not instantiate reflection class');
         }
 

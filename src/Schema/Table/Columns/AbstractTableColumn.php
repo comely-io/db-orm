@@ -59,16 +59,12 @@ abstract class AbstractTableColumn
      */
     public function __get($prop)
     {
-        switch ($prop) {
-            case "isNullable":
-                return $this->nullable;
-            case "attrs":
-                return $this->attributes;
-            case "defaultValue":
-                return $this->default;
-        }
-
-        return false;
+        return match ($prop) {
+            "isNullable" => $this->nullable,
+            "attrs" => $this->attributes,
+            "defaultValue" => $this->default,
+            default => false,
+        };
     }
 
     /**

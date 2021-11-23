@@ -25,8 +25,9 @@ class TextColumn extends AbstractTableColumn
 {
     /** @var string */
     protected const DATATYPE = "string";
-    /** @var null|string */
-    private ?string $size = null;
+
+    /** @var string */
+    private string $size = "";
 
     use ColumnCharsetTrait;
     use BigStringSizeTrait;

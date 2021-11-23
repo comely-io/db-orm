@@ -56,19 +56,16 @@ class ForeignKeyConstraint extends AbstractTableConstraint
     protected function constraintSQL(string $driver): ?string
     {
         $tableReference = $this->db ? sprintf('`%s`.`%s`', $this->db, $this->table) : sprintf('`%s`', $this->table);
-        switch ($driver) {
-            case "mysql":
-                return sprintf('FOREIGN KEY (`%s`) REFERENCES %s(`%s`)', $this->name, $tableReference, $this->col);
-            case "sqlite":
-                return sprintf(
-                    'CONSTRAINT `%s` FOREIGN KEY (`%s`) REFERENCES %s(`%s`)',
-                    sprintf('cnstrnt_%s_frgn', $this->name),
-                    $this->name,
-                    $tableReference,
-                    $this->col
-                );
-        }
-
-        return null;
+        return match ($driver) {
+            "mysql" => sprintf('FOREIGN KEY (`%s`) REFERENCES %s(`%s`)', $this->name, $tableReference, $this->col),
+            "sqlite" => sprintf(
+                'CONSTRAINT `%s` FOREIGN KEY (`%s`) REFERENCES %s(`%s`)',
+                sprintf('cnstrnt_%s_frgn', $this->name),
+                $this->name,
+                $tableReference,
+                $this->col
+            ),
+            default => null,
+        };
     }
 }
