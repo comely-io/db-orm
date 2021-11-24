@@ -38,16 +38,15 @@ class DbCredentials
     public bool $persistent = false;
 
     /**
-     * DbCredentials constructor.
-     * @param string $driver
+     * @param DbDrivers $driver
      * @param string $dbname
      * @param string $host
      * @param int|null $port
      * @throws DbConnectionException
      */
-    public function __construct(string $driver, string $dbname, string $host = "localhost", ?int $port = null)
+    public function __construct(DbDrivers $driver, string $dbname, string $host = "localhost", ?int $port = null)
     {
-        $this->driver = strtolower($driver);
+        $this->driver = strtolower($driver->value);
         if (!in_array($this->driver, \PDO::getAvailableDrivers())) {
             throw new DbConnectionException('Invalid database driver or is not supported');
         }

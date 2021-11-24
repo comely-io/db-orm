@@ -10,18 +10,16 @@
  * https://github.com/comely-io/db-orm/blob/master/LICENSE
  */
 
-declare(strict_types=1);
-
-namespace Comely\Database;
+namespace Comely\Database\Server;
 
 /**
- * Interface ConstantsInterface
- * @package Comely\Database
+ * Enum DbDrivers
+ * @package Comely\Database\Server
  */
-interface ConstantsInterface
+enum DbDrivers: string
 {
-    /** string Version (Major.Minor.Release-Suffix) */
-    public const VERSION = "2.0.1";
-    /** int Version (Major * 10000 + Minor * 100 + Release) */
-    public const VERSION_ID = 20001;
+    case MYSQL = "mysql";
+    case SQLITE = "sqlite";
+    case PGSQL = "pgsql";
 }
+
