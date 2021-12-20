@@ -21,11 +21,11 @@ namespace Comely\Database\Server;
 class PdoError
 {
     /** @var string|null */
-    public ?string $sqlState = null;
+    public readonly ?string $sqlState;
     /** @var int|string|null */
-    public int|string|null $code = null;
+    public readonly int|string|null $code;
     /** @var string|null */
-    public ?string $info = null;
+    public readonly ?string $info;
 
     /**
      * PdoError constructor.
@@ -33,7 +33,7 @@ class PdoError
      */
     public function __construct(array $errorInfo)
     {
-        $this->sqlState = $errorInfo[0];
+        $this->sqlState = $errorInfo[0] ?? null;
         $this->code = $errorInfo[1] ?? null;
         $this->info = $errorInfo[2] ?? null;
     }

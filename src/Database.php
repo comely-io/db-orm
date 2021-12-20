@@ -31,7 +31,7 @@ use Comely\Utils\OOP\Traits\NotSerializableTrait;
 class Database extends PdoAdapter implements ConstantsInterface
 {
     /** @var Queries */
-    private Queries $queries;
+    public readonly Queries $queries;
 
     use NotSerializableTrait;
     use NotCloneableTrait;

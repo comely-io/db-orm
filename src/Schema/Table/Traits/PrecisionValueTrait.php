@@ -35,7 +35,7 @@ trait PrecisionValueTrait
         }
 
         // Scale
-        $maxScale = $digits > self::MAX_SCALE ? self::MAX_SCALE : $digits;
+        $maxScale = max($digits, self::MAX_SCALE);
         if ($scale < 0 || $scale > $maxScale) {
             throw new \OutOfRangeException(
                 sprintf('Scale digits must be between 1 and %d', $maxScale)

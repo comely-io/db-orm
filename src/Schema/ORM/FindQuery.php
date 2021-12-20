@@ -185,7 +185,7 @@ class FindQuery
 
         if (!$modelsClass) {
             throw new ORM_Exception(
-                sprintf('ORM models class not defined for "%s.%s" table', $db->credentials()->dbname, $table->name)
+                sprintf('ORM models class not defined for "%s.%s" table', $db->credentials->dbname, $table->name)
             );
         }
 
@@ -209,7 +209,7 @@ class FindQuery
 
         if (!$fetched) {
             throw new ORM_ModelNotFoundException(
-                sprintf('No matching row found in "%s.%s"', $db->credentials()->dbname, $table->name)
+                sprintf('No matching row found in "%s.%s"', $db->credentials->dbname, $table->name)
             );
         }
 

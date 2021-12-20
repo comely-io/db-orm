@@ -26,7 +26,7 @@ abstract class PdoAdapter
     /** @var \PDO */
     private \PDO $pdo;
     /** @var DbCredentials */
-    private DbCredentials $credentials;
+    public readonly DbCredentials $credentials;
 
     /**
      * PdoAdapter constructor.
@@ -41,20 +41,12 @@ abstract class PdoAdapter
         }
 
         try {
-            $this->pdo = new \PDO($credentials->dsn(), $credentials->username, $credentials->password, $options);
+            $this->pdo = new \PDO($credentials->dsn(), $credentials->username(), $credentials->password(), $options);
         } catch (\PDOException $e) {
             throw new DbConnectionException($e->getMessage(), $e->getCode());
         }
 
         $this->credentials = $credentials;
-    }
-
-    /**
-     * @return DbCredentials
-     */
-    public function credentials(): DbCredentials
-    {
-        return $this->credentials;
     }
 
     /**

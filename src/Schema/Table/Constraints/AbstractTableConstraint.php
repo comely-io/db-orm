@@ -52,9 +52,8 @@ abstract class AbstractTableConstraint
      */
     public function __call($name, $arguments)
     {
-        switch ($name) {
-            case "getConstraintSQL":
-                return $this->constraintSQL(strval($arguments[0] ?? ""));
+        if ($name == "getConstraintSQL") {
+            return $this->constraintSQL(strval($arguments[0] ?? ""));
         }
 
         throw new \DomainException('Cannot call inaccessible method');

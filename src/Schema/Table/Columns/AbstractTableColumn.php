@@ -107,9 +107,8 @@ abstract class AbstractTableColumn
      */
     public function __call($name, $arguments)
     {
-        switch ($name) {
-            case "getColumnSQL":
-                return $this->columnSQL(strval($arguments[0] ?? ""));
+        if ($name == "getColumnSQL") {
+            return $this->columnSQL(strval($arguments[0] ?? ""));
         }
 
         throw new \DomainException('Cannot call inaccessible method');

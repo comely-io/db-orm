@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Comely\Database\Server;
 
 use Comely\Database\Exception\DbConnectionException;
+use Comely\Utils\OOP\Traits\NoDumpTrait;
 
 /**
  * Class DbCredentials
@@ -23,19 +24,21 @@ use Comely\Database\Exception\DbConnectionException;
 class DbCredentials
 {
     /** @var string */
-    public string $driver;
+    public readonly string $driver;
     /** @var string */
-    public string $dbname;
+    public readonly string $dbname;
     /** @var string */
-    public string $host;
+    public readonly string $host;
     /** @var null|int */
-    public ?int $port = null;
+    public readonly ?int $port;
     /** @var null|string */
-    public ?string $username = null;
+    private ?string $username = null;
     /** @var null|string */
-    public ?string $password = null;
+    private ?string $password = null;
     /** @var bool */
     public bool $persistent = false;
+
+    use NoDumpTrait;
 
     /**
      * @param DbDrivers $driver
@@ -85,5 +88,21 @@ class DbCredentials
         $this->username = $username;
         $this->password = $password;
         return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function username(): ?string
+    {
+        return $this->username;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function password(): ?string
+    {
+        return $this->password;
     }
 }

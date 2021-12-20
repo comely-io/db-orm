@@ -101,7 +101,7 @@ class BoundDbTable
     public function __debugInfo(): array
     {
         return [
-            "db" => sprintf('%s@%s', $this->db->credentials()->host, $this->db->credentials()->dbname),
+            "db" => sprintf('%s@%s', $this->db->credentials->host, $this->db->credentials->dbname),
             "table" => $this->table->name
         ];
     }

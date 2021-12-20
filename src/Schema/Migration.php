@@ -76,7 +76,7 @@ class Migration
     {
         $db = $this->table->db();
         $table = $this->table->table();
-        $driver = $db->credentials()->driver;
+        $driver = $db->credentials->driver;
         $statement = "";
 
         // Drop existing?

@@ -64,7 +64,7 @@ abstract class Abstract_ORM_Model implements \Serializable
         $this->bound(); // Check if table is bound with a DB
 
         try {
-            $this->reflection = new \ReflectionClass(get_called_class());
+            $this->reflection = new \ReflectionClass(static::class);
         } catch (\Exception) {
             throw new ORM_Exception('Could not instantiate reflection class');
         }
@@ -234,10 +234,9 @@ abstract class Abstract_ORM_Model implements \Serializable
      */
     final public function __call(string $method, $arguments)
     {
-        switch ($method) {
-            case "triggerEvent":
-                $this->triggerEvent(strval($arguments[0] ?? ""), $arguments);
-                return;
+        if ($method == "triggerEvent") {
+            $this->triggerEvent(strval($arguments[0] ?? ""), $arguments);
+            return;
         }
 
         throw new \DomainException('Cannot call inaccessible method');
@@ -251,18 +250,16 @@ abstract class Abstract_ORM_Model implements \Serializable
     final public function serialize(): string
     {
         if (static::SERIALIZABLE !== true) {
-            throw new ORM_ModelSerializeException(sprintf('ORM model "%s" cannot be serialized', get_called_class()));
+            throw new ORM_ModelSerializeException(sprintf('ORM model "%s" cannot be serialized', static::class));
         }
 
         $this->triggerEvent("onSerialize"); // Trigger event
 
         $props = [];
         foreach ($this->reflection->getProperties() as $prop) {
-            if ($prop->getDeclaringClass()->name === get_class()) {
+            if ($prop->getDeclaringClass()->name === self::class) {
                 continue; // Ignore props of this abstract model class
             }
-
-            $prop->setAccessible(true);
 
             if (!$prop->isDefault()) {
                 continue; // Ignore dynamically declared properties
@@ -274,7 +271,7 @@ abstract class Abstract_ORM_Model implements \Serializable
         }
 
         $model = [
-            "instance" => get_called_class(),
+            "instance" => static::class,
             "props" => $this->props,
             "originals" => $this->originals
         ];
@@ -287,11 +284,11 @@ abstract class Abstract_ORM_Model implements \Serializable
      * @throws ORM_Exception
      * @throws ORM_ModelUnserializeException
      */
-    final public function unserialize($data): void
+    final public function unserialize(string $data): void
     {
         if (static::SERIALIZABLE !== true) {
             throw new ORM_ModelUnserializeException(
-                sprintf('ORM model "%s" cannot be serialized', get_called_class())
+                sprintf('ORM model "%s" cannot be serialized', static::class)
             );
         }
 
@@ -306,7 +303,6 @@ abstract class Abstract_ORM_Model implements \Serializable
 
         foreach ($this->reflection->getProperties() as $prop) {
             if (array_key_exists($prop->getName(), $objProps)) {
-                $prop->setAccessible(true); // Set accessibility
                 $prop->setValue($this, $objProps[$prop->getName()]);
             }
         }
@@ -317,7 +313,7 @@ abstract class Abstract_ORM_Model implements \Serializable
         $modelProps = $obj["model"]["props"] ?? null;
         $modelOriginals = $obj["model"]["originals"] ?? null;
 
-        if ($modelInstance !== get_called_class()) {
+        if ($modelInstance !== static::class) {
             throw new ORM_ModelUnserializeException('ERR_MODEL_INSTANCE');
         } elseif (!is_array($modelProps)) {
             throw new ORM_ModelUnserializeException('ERR_MODEL_STORED_PROPS');
@@ -340,7 +336,7 @@ abstract class Abstract_ORM_Model implements \Serializable
         $tableName = static::TABLE;
         if (!is_string($tableName) || !$tableName) {
             throw new ORM_Exception(
-                sprintf('Invalid TABLE const value in ORM model "%s"', get_called_class())
+                sprintf('Invalid TABLE const value in ORM model "%s"', static::class)
             );
         }
 

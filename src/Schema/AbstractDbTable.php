@@ -57,12 +57,12 @@ abstract class AbstractDbTable
         // Get table names and engine
         $this->name = static::TABLE;
         if (!is_string($this->name) || !$this->name) {
-            throw new \InvalidArgumentException(sprintf('Invalid TABLE const for table "%s"', get_called_class()));
+            throw new \InvalidArgumentException(sprintf('Invalid TABLE const for table "%s"', static::class));
         }
 
         $this->engine = static::ENGINE;
         if (!is_string($this->engine) || !$this->engine) {
-            throw new \InvalidArgumentException(sprintf('Invalid ENGINE const for table "%s"', get_called_class()));
+            throw new \InvalidArgumentException(sprintf('Invalid ENGINE const for table "%s"', static::class));
         }
 
         // Models class
@@ -70,7 +70,7 @@ abstract class AbstractDbTable
         if (!is_null($this->ormClass)) {
             if (class_exists($this->ormClass)) {
                 throw new \InvalidArgumentException(
-                    sprintf('defined ORM_CLASS for table "%s" does not exist', get_called_class())
+                    sprintf('defined ORM_CLASS for table "%s" does not exist', static::class)
                 );
             }
 
@@ -82,7 +82,7 @@ abstract class AbstractDbTable
 
             if (!isset($isValidORMClass) || !$isValidORMClass) {
                 throw new \InvalidArgumentException(
-                    sprintf('define ORM_CLASS for table "%s" is not subclass of ORM', get_called_class())
+                    sprintf('define ORM_CLASS for table "%s" is not subclass of ORM', static::class)
                 );
             }
         }
@@ -97,7 +97,7 @@ abstract class AbstractDbTable
     /**
      * @return void
      */
-    abstract public function onConstruct(): void;
+    abstract protected function onConstruct(): void;
 
     /**
      * @param Columns $cols
