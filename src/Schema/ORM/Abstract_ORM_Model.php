@@ -36,7 +36,7 @@ use Comely\Utils\OOP\Traits\NoDumpTrait;
  * @method void beforeQuery()
  * @method void afterQuery()
  */
-abstract class Abstract_ORM_Model implements \Serializable
+abstract class Abstract_ORM_Model
 {
     /** @var null Table classname */
     public const TABLE = null;
@@ -243,11 +243,10 @@ abstract class Abstract_ORM_Model implements \Serializable
     }
 
     /**
-     * @return string
-     * @throws ORM_Exception
+     * @return array
      * @throws ORM_ModelSerializeException
      */
-    final public function serialize(): string
+    final public function __serialize(): array
     {
         if (static::SERIALIZABLE !== true) {
             throw new ORM_ModelSerializeException(sprintf('ORM model "%s" cannot be serialized', static::class));
@@ -276,15 +275,16 @@ abstract class Abstract_ORM_Model implements \Serializable
             "originals" => $this->originals
         ];
 
-        return serialize(["model" => $model, "props" => $props]);
+        return ["model" => $model, "props" => $props];
     }
 
     /**
-     * @param string $data
+     * @param array $obj
+     * @return void
      * @throws ORM_Exception
      * @throws ORM_ModelUnserializeException
      */
-    final public function unserialize(string $data): void
+    final public function __unserialize(array $obj): void
     {
         if (static::SERIALIZABLE !== true) {
             throw new ORM_ModelUnserializeException(
@@ -295,7 +295,6 @@ abstract class Abstract_ORM_Model implements \Serializable
         $this->bound(); // Check if table is bound with database
 
         // Unserialize
-        $obj = unserialize($data);
         $objProps = $obj["props"];
         if (!is_array($objProps)) {
             throw new ORM_ModelUnserializeException('ERR_OBJ_PROPS');
