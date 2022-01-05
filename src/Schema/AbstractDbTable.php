@@ -68,7 +68,7 @@ abstract class AbstractDbTable
         // Models class
         $this->ormClass = static::ORM_CLASS;
         if (!is_null($this->ormClass)) {
-            if (class_exists($this->ormClass)) {
+            if (!class_exists($this->ormClass)) {
                 throw new \InvalidArgumentException(
                     sprintf('defined ORM_CLASS for table "%s" does not exist', static::class)
                 );
