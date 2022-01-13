@@ -42,7 +42,7 @@ class QueryExecuteException extends DbQueryException
     public static function Query(string $queryStr, array $data = [], ?PdoError $error = null, ?\Exception $ex = null, ?string $msg = null): self
     {
         $msg = $ex?->getMessage() ?? $msg ?? 'Failed to execute DB query';
-        return new self($queryStr, $data, $error, $msg, $ex?->getCode() ?? 0, $ex);
+        return new self($queryStr, $data, $error, $msg, intval($ex?->getCode() ?? 0), $ex);
     }
 
     /**
