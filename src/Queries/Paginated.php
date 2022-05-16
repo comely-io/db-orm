@@ -40,14 +40,13 @@ class Paginated implements \Countable
     private ?CompactNav $compact = null;
 
     /**
-     * Paginated constructor.
-     * @param DbFetch $fetched
+     * @param DbFetch|null $fetched
      * @param int $totalRows
      * @param int $start
      * @param int $perPage
      * @throws \Comely\Database\Exception\QueryFetchException
      */
-    public function __construct(DbFetch $fetched, int $totalRows, int $start, int $perPage)
+    public function __construct(?DbFetch $fetched, int $totalRows, int $start, int $perPage)
     {
         $this->totalRows = $totalRows;
         $this->start = $start;
