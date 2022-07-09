@@ -294,6 +294,12 @@ abstract class Abstract_ORM_Model
 
         $this->bound(); // Check if table is bound with database
 
+        try {
+            $this->reflection = new \ReflectionClass(static::class);
+        } catch (\Exception) {
+            throw new ORM_Exception('Could not instantiate reflection class');
+        }
+
         // Unserialize
         $objProps = $obj["props"];
         if (!is_array($objProps)) {
